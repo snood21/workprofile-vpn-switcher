@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Work Profile VPN Switcher</string>
+    <string name="launcher_name">WP/VPN Switch</string>
+
+    <!-- Секции -->
+    <string name="section_monitoring">Мониторинг</string>
+    <string name="section_settings">Настройки</string>
+    <string name="section_advanced">Расширенные настройки</string>
+    <string name="section_vpn_apps">VPN-приложения</string>
+    <string name="section_language">Язык</string>
+
+    <!-- Переключатель мониторинга -->
+    <string name="label_monitoring">Включить мониторинг</string>
+    <string name="desc_monitoring">Следить за VPN-подключениями в фоне</string>
+
+    <!-- Переключатель восстановления состояния -->
+    <string name="label_restore_state">Восстанавливать состояние профиля</string>
+    <string name="desc_restore_state">После отключения VPN вернуть профиль в исходное состояние. Если выключено — профиль остаётся неактивным</string>
+
+    <!-- Переключатель обратной логики -->
+    <string name="label_disable_on_profile_enable">Отключать профиль при активном VPN</string>
+    <string name="desc_disable_on_profile_enable">Если рабочий профиль включается вручную при активном VPN — отключить профиль снова</string>
+
+    <!-- Режим списка -->
+    <string name="label_list_mode">Режим мониторинга</string>
+    <string name="desc_list_mode_allowlist">Переключение профиля сработает только для VPN-приложений из списка ниже</string>
+    <string name="desc_list_mode_denylist">Переключение профиля сработает для любого VPN, кроме приложений из списка ниже (например AdGuard)</string>
+
+    <!-- Расширенные: polling -->
+    <string name="label_polling">Использовать фоновый опрос</string>
+    <string name="desc_polling">Если автоматическое отключение не срабатывает — возможно, ваша ОС подавляет события смены сети. Включите фоновый опрос как резервный механизм: он будет периодически проверять состояние VPN</string>
+    <string name="label_poll_interval">Интервал опроса (секунды)</string>
+    <string name="error_invalid_number">Введите число</string>
+    <string name="error_poll_interval_range">Допустимый диапазон: 1–3600 секунд</string>
+
+    <!-- Язык -->
+
+    <!-- Статус VPN -->
+    <string name="vpn_status_label">VPN:</string>
+    <string name="vpn_status_active">Активен</string>
+    <string name="vpn_status_inactive">Неактивен</string>
+
+    <!-- Действия -->
+    <string name="action_add">+ Добавить</string>
+    <string name="action_remove">Удалить</string>
+    <string name="action_stop">Остановить</string>
+    <string name="app_added">Приложение добавлено</string>
+
+    <!-- Режим списка -->
+    <string name="list_mode_denylist">Все VPN, кроме исключений</string>
+    <string name="list_mode_allowlist">Только выбранные VPN</string>
+
+    <!-- Пустой список -->
+    <string name="empty_vpn_list">Список пуст.\nДобавьте VPN-приложения.</string>
+
+    <!-- Выбор приложения -->
+    <string name="select_vpn_app">Выберите VPN-приложение</string>
+    <string name="search_hint">Поиск по названию или пакету…</string>
+
+    <!-- Язык -->
+    <string name="lang_system">Системный</string>
+    <string name="lang_ru">Русский</string>
+    <string name="lang_en">English</string>
+
+    <!-- Предупреждения -->
+    <string name="warning_no_work_profile">⚠ Рабочий профиль не обнаружен. Настройте рабочий профиль через Shelter или другое приложение.</string>
+    <string name="warning_no_permission">⚠ Отсутствует разрешение MODIFY_QUIET_MODE. Выполните:\nadb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.MODIFY_QUIET_MODE</string>
+
+    <!-- Уведомление сервиса -->
+    <string name="notification_channel_name">Мониторинг VPN</string>
+    <string name="notification_channel_desc">Уведомление активного мониторинга VPN-подключений</string>
+    <string name="notification_monitoring">Мониторинг активен</string>
+    <string name="notification_vpn_active">VPN активен — рабочий профиль отключён</string>
+    <string name="notification_channel_alert_name">VPN блокировка</string>
+    <string name="notification_blocked_title">Рабочий профиль заблокирован</string>
+    <string name="notification_blocked_text">Для включения рабочего профиля отключите активный VPN</string>
+
+    <!-- О программе -->
+    <string name="about_boosty">Boosty</string>
+    <string name="about_donatty">Donatty (доступна оплата по СБП)</string>
+    <string name="action_about">О программе</string>
+    <string name="about_version">Версия %s</string>
+    <string name="about_developer">snood21</string>
+    <string name="about_license">Apache License 2.0</string>
+    <string name="about_label_developer">Разработчик</string>
+    <string name="about_label_license">Лицензия</string>
+    <string name="about_github">Репозиторий на GitHub</string>
+    <string name="about_donate">Поддержать разработчика</string>
+</resources>
