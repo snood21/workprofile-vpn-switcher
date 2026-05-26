@@ -40,7 +40,7 @@ jobs:
       - name: Build Release APK
         if: github.event_name != 'pull_request'
         env:
-          KEYSTORE_PATH: app/release.jks
+          KEYSTORE_PATH: release.jks
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
