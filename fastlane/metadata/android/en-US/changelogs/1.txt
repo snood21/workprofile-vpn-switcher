@@ -1,0 +1,7 @@
+Initial release.
+
+— Automatic work profile management based on VPN connection state
+— Allowlist and denylist modes for VPN app filtering
+— Reverse logic: disable profile if enabled manually while VPN is active
+— Background polling fallback for devices with suppressed network events
+— Russian and English interface
