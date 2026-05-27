@@ -21,10 +21,10 @@
 
 <table>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/1.jpg" width="1080" alt="Скриншот интерфейса1"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/2.jpg" width="1080" alt="Скриншот интерфейса2"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/3.jpg" width="1080" alt="Скриншот интерфейса3"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/4.jpg" width="1080" alt="Скриншот интерфейса4"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/1.jpg" width="200" alt="Скриншот интерфейса1"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/2.jpg" width="200" alt="Скриншот интерфейса2"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/3.jpg" width="200" alt="Скриншот интерфейса3"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/4.jpg" width="200" alt="Скриншот интерфейса4"/></td>
   </tr>
 </table>
 
@@ -122,10 +122,10 @@ An Android application that automatically manages the work profile when a VPN co
 
 <table>
   <tr>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="1080" alt="Interface screen1"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="1080" alt="Interface screen2"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="1080" alt="Interface screen3"/></td>
-    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="1080" alt="Interface screen4"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.jpg" width="200" alt="Interface screen1"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="200" alt="Interface screen2"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="200" alt="Interface screen3"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" alt="Interface screen4"/></td>
   </tr>
 </table>
 
