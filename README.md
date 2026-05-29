@@ -1,6 +1,6 @@
 # Work Profile VPN Switcher
 
-[![License](https://img.shields.io/github/license/snood21/workprofile-vpn-switcher)](LICENSE)
+[![License](https://img.shields.io/github/license/snood21/workprofile-vpn-switcher?cacheSeconds=60)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://android.com)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/snood21/workprofile-vpn-switcher?cacheSeconds=60)
 [![Min SDK](https://img.shields.io/badge/minSdk-30%20(Android%2011)-blue)](https://developer.android.com/about/versions/11)
