@@ -9,6 +9,7 @@
     <string name="section_advanced">Расширенные настройки</string>
     <string name="section_vpn_apps">VPN-приложения</string>
     <string name="section_language">Язык</string>
+    <string name="section_theme">Тема</string>
 
     <!-- Переключатель мониторинга -->
     <string name="label_monitoring">Включить мониторинг</string>
@@ -62,6 +63,24 @@
     <string name="lang_system">Системный</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_en">English</string>
+
+    <!-- Тема -->
+    <string name="theme_system">Системная</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+
+    <!-- Экран настроек интерфейса (кнопка на главном экране) -->
+    <string name="action_interface_settings">Интерфейс</string>
+
+    <!-- Экран настроек логирования -->
+    <string name="action_logging_settings">Логирование</string>
+    <string name="label_logging_enabled">Включить логирование</string>
+    <string name="desc_logging_enabled">Записывать события в файл внутри приватного каталога приложения, доступный для просмотра на этом экране</string>
+    <string name="label_log_max_size">Макс. размер файла лога (КБ)</string>
+    <string name="error_log_max_size_range">Допустимый диапазон: 128–8192 КБ</string>
+    <string name="action_show_log">Показать лог</string>
+    <string name="action_clear_log">Очистить лог</string>
+    <string name="log_empty">Лог пуст</string>
 
     <!-- Предупреждения -->
     <string name="warning_no_work_profile">⚠ Рабочий профиль не обнаружен. Настройте рабочий профиль через Shelter или другое приложение.</string>

@@ -17,6 +17,7 @@ import io.github.snood21.workprofilevpnswitcher.R
 import io.github.snood21.workprofilevpnswitcher.ui.MainActivity
 import io.github.snood21.workprofilevpnswitcher.util.AppSettings
 import io.github.snood21.workprofilevpnswitcher.util.AppSettings.Companion.DEFAULT_POLL_INTERVAL_MS
+import io.github.snood21.workprofilevpnswitcher.util.FileLogger
 import io.github.snood21.workprofilevpnswitcher.util.Logger
 import io.github.snood21.workprofilevpnswitcher.util.VpnUtils
 import io.github.snood21.workprofilevpnswitcher.util.WorkProfileManager
@@ -54,7 +55,7 @@ class VpnMonitorService : Service() {
     private lateinit var settings: AppSettings
     private lateinit var workProfileManager: WorkProfileManager
     private lateinit var connectivityManager: ConnectivityManager
-    private val activeVpnNetworks = mutableMapOf<Network, String>()
+    private var activeVpn: Pair<Network, String>? = null
     private var monitoringStarted = false
     private var lastWorkProfileBlockTime = 0L
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -98,6 +99,7 @@ class VpnMonitorService : Service() {
     override fun onDestroy() {
         stopMonitoring()
         Logger.d(TAG) {"Service destroyed"}
+        FileLogger.close()
         super.onDestroy()
     }
     override fun onTaskRemoved(rootIntent: Intent?) {
@@ -144,11 +146,12 @@ class VpnMonitorService : Service() {
 
             monitoringStarted = false
         }
-        activeVpnNetworks.clear()
+        activeVpn = null
     }
     // --- Обработка событий VPN ---
     private fun handleVpnAppeared(network: Network, caps: NetworkCapabilities) {
-        if (activeVpnNetworks.containsKey(network)) return
+        // Если это та же самая сеть — повторный вызов, ничего не делаем
+        if (activeVpn?.first == network) return
 
         val vpnPackage = VpnUtils.resolveVpnPackage(network, caps, this.connectivityManager, this, this.settings) ?: run {
             Logger.d(TAG) { "VPN not monitored, ignoring" }
@@ -156,9 +159,8 @@ class VpnMonitorService : Service() {
         }
         Logger.d(TAG) { "Resolved VPN package: $vpnPackage" }
 
-        // Добавляем в map сразу — до любых проверок состояния.
-        // Это предотвращает повторный вход для той же сети.
-        activeVpnNetworks[network] = vpnPackage
+        val wasMonitoringVpn = activeVpn != null
+        activeVpn = network to vpnPackage
 
         val isActive = workProfileManager.isWorkProfileActive()
         if (isActive == null) {
@@ -166,8 +168,7 @@ class VpnMonitorService : Service() {
             return
         }
 
-        val firstVpn = activeVpnNetworks.size == 1  // мы только что добавили первый
-        if (firstVpn && settings.restoreProfileState) {
+        if (!wasMonitoringVpn && settings.restoreProfileState) {
             settings.saveProfileState(isActive)
             Logger.d(TAG) { "Saved profile state: wasActive=$isActive" }
         }
@@ -181,11 +182,10 @@ class VpnMonitorService : Service() {
         }
     }
     private fun handleVpnLost(network: Network) {
-        val vpnPackage = activeVpnNetworks.remove(network) ?: return
-        if (activeVpnNetworks.isNotEmpty()) {
-            Logger.d(TAG) {"Other monitored VPNs still active, skip restore"}
-            return
-        }
+        if (activeVpn?.first != network) return  // это не та сеть, что мы отслеживали
+        val vpnPackage = activeVpn?.second
+        activeVpn = null
+
         Logger.d(TAG) {"Monitored VPN disconnected: $vpnPackage"}
         if (!settings.restoreProfileState) {
             Logger.d(TAG) {"Restore disabled — leaving work profile as is"}
@@ -208,20 +208,27 @@ class VpnMonitorService : Service() {
         //Альтернативы для получения всех текущих сетей без callback нет в публичном API
         @Suppress("DEPRECATION")
         val currentNetworks = connectivityManager.allNetworks.toSet()
-        val currentVpnNetworks = currentNetworks.filter { network ->
+        val currentVpnNetwork = currentNetworks.firstOrNull { network ->
             connectivityManager.getNetworkCapabilities(network)
                 ?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
-        }.toSet()
-        for (network in currentVpnNetworks) {
-            val caps = connectivityManager.getNetworkCapabilities(network) ?: continue
-            handleVpnAppeared(network, caps)
         }
-        val lostNetworks = activeVpnNetworks.keys.filter { it !in currentNetworks }
-        for (network in lostNetworks) {
-            Logger.d(TAG) {"Polling detected lost network: $network"}
-            handleVpnLost(network)
+
+        // Если ранее отслеживаемая сеть больше не существует — обрабатываем потерю
+        val tracked = activeVpn?.first
+        if (tracked != null && tracked !in currentNetworks) {
+            Logger.d(TAG) { "Polling detected lost network: $tracked" }
+            handleVpnLost(tracked)
         }
-        if (activeVpnNetworks.isNotEmpty()) {
+
+        // Если сейчас есть VPN-сеть — обрабатываем её появление (если ещё не учтена)
+        if (currentVpnNetwork != null) {
+            val caps = connectivityManager.getNetworkCapabilities(currentVpnNetwork)
+            if (caps != null) {
+                handleVpnAppeared(currentVpnNetwork, caps)
+            }
+        }
+
+        if (activeVpn != null) {
             checkAndDisableWorkProfileIfNeeded()
         }
     }

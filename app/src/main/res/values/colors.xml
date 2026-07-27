@@ -6,19 +6,24 @@
     <color name="status_active">#2E7D32</color>
     <!-- #616161 на белом даёт контраст 5.9:1 — проходит WCAG AA -->
     <color name="status_inactive">#616161</color>
+    <!-- Семантические цвета предупреждения — не поверхность темы, задаются явно на оба режима (см. values-night) -->
     <color name="warning_background">#FFF8E1</color>
     <color name="warning_text">#BF360C</color>
     <color name="warning_border">#FFB300</color>
-    <!-- #616161 на белом: контраст 5.9:1 — проходит WCAG AA -->
-    <color name="text_secondary">#616161</color>
-    <!-- #1565C0 на белом: контраст 5.9:1 — проходит WCAG AA -->
-    <color name="section_header">#1565C0</color>
-    <color name="divider">#E0E0E0</color>
-    <color name="card_background">#FFFFFF</color>
-    <color name="card_border">#E0E0E0</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="link_color">#1976D2</color>
+    <!-- #616161 на белом даёт контраст 5.9:1 — проходит WCAG AA -->
+    <color name="text_secondary">#616161</color>
+    <color name="divider">#E0E0E0</color>
+    <!--
+      section_header, card_background, card_border удалены — заменены на
+      ?attr/colorPrimary, ?attr/colorSurface, ?attr/colorOutline (валидны в MDC1,
+      colorSurface/colorOnSurface явно объявлены в themes.xml).
+      text_secondary и divider оставлены как явные ресурсы, а не theme-атрибуты:
+      colorOnSurfaceVariant и colorOutlineVariant — атрибуты Material 3,
+      недоступны в теме Theme.MaterialComponents.* (см. крах при использовании).
+    -->
 </resources>

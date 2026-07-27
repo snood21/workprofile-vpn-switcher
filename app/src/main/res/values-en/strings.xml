@@ -9,6 +9,7 @@
     <string name="section_advanced">Advanced settings</string>
     <string name="section_vpn_apps">VPN Applications</string>
     <string name="section_language">Language</string>
+    <string name="section_theme">Theme</string>
 
     <!-- Monitoring toggle -->
     <string name="label_monitoring">Enable monitoring</string>
@@ -62,6 +63,24 @@
     <string name="lang_system">System</string>
     <string name="lang_ru">Русский</string>
     <string name="lang_en">English</string>
+
+    <!-- Theme -->
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <!-- Interface settings screen (entry point on main screen) -->
+    <string name="action_interface_settings">Interface</string>
+
+    <!-- Logging settings screen -->
+    <string name="action_logging_settings">Logging</string>
+    <string name="label_logging_enabled">Enable logging</string>
+    <string name="desc_logging_enabled">Write log entries to a file inside the app\'s private storage, viewable in this screen</string>
+    <string name="label_log_max_size">Max log file size (KB)</string>
+    <string name="error_log_max_size_range">Acceptable range: 128–8192 KB</string>
+    <string name="action_show_log">Show log</string>
+    <string name="action_clear_log">Clear log</string>
+    <string name="log_empty">Log is empty</string>
 
     <!-- Warnings -->
     <string name="warning_no_work_profile">⚠ Work profile not found. Set up a work profile using Shelter or another application.</string>

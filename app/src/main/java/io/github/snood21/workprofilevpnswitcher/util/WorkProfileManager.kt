@@ -21,6 +21,24 @@ class WorkProfileManager(context: Context) {
     /**
      * Найти UserHandle рабочего профиля.
      * Возвращает null если рабочего профиля нет.
+     *
+     * ВНИМАНИЕ: текущая логика "первый чужой профиль" не эквивалентна
+     * "рабочий профиль" — на Android 15+ (private space), при наличии
+     * второго пользователя, guest-профиля или производительских clone-профилей
+     * может вернуть неверный handle.
+     *
+     * Точное определение через UserManager.isManagedProfile для произвольного
+     * UserHandle не решено: скрытая версия isManagedProfile(int userId) требует
+     * MANAGE_USERS (недоступно обычным приложениям); попытка получить контекст
+     * через Context.createContextAsUser не компилируется — это non-SDK/скрытый
+     * интерфейс, недоступный из публичного Android SDK (проверено эмпирически —
+     * "Unresolved reference" при компиляции с compileSdk 37).
+     * Единственный официально доступный публичный метод без параметра —
+     * UserManager.isManagedProfile() без аргументов (API 30+) — проверяет
+     * только пользователя ТЕКУЩЕГО контекста, не годится для проверки
+     * произвольного UserHandle из списка.
+     * Требуется другая стратегия определения либо явное документирование
+     * ограничения (см. README).
      */
     private fun getWorkProfileHandle() =
         userManager.userProfiles
@@ -35,7 +53,7 @@ class WorkProfileManager(context: Context) {
             return null
         }
         // isQuietModeEnabled == true означает профиль ВЫКЛЮЧЕН
-        return userManager.isQuietModeEnabled(handle) == false
+        return !userManager.isQuietModeEnabled(handle)
     }
     /**
      * Отключить рабочий профиль.
@@ -47,9 +65,13 @@ class WorkProfileManager(context: Context) {
             return false
         }
         return try {
-            userManager.requestQuietModeEnabled(true, handle)
-            Logger.d(TAG) {"Work profile disabled"}
-            true
+            val requestAccepted = userManager.requestQuietModeEnabled(true, handle)
+            if (requestAccepted) {
+                Logger.d(TAG) {"Work profile disabled"}
+            } else {
+                Logger.w(TAG) {"disableWorkProfile: system declined the request (requestQuietModeEnabled returned false)"}
+            }
+            requestAccepted
         } catch (e: SecurityException) {
             Logger.e(TAG, "disableWorkProfile: missing MODIFY_QUIET_MODE permission", e)
             false
@@ -65,9 +87,13 @@ class WorkProfileManager(context: Context) {
             return false
         }
         return try {
-            userManager.requestQuietModeEnabled(false, handle)
-            Logger.d(TAG) {"Work profile enabled"}
-            true
+            val requestAccepted = userManager.requestQuietModeEnabled(false, handle)
+            if (requestAccepted) {
+                Logger.d(TAG) {"Work profile enabled"}
+            } else {
+                Logger.w(TAG) {"enableWorkProfile: system declined the request (requestQuietModeEnabled returned false) — may require user credential confirmation"}
+            }
+            requestAccepted
         } catch (e: SecurityException) {
             Logger.e(TAG, "enableWorkProfile: missing MODIFY_QUIET_MODE permission", e)
             false

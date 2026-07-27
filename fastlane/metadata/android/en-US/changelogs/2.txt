@@ -1,0 +1,5 @@
+* Added dark theme
+* New "Interface" screen: language and theme selection (system/light/dark)
+* New "Logging" screen: writes events to a file for diagnostics
+* Fixed language switching — now applied on all screens right away
+* Minor fixes and stability improvements

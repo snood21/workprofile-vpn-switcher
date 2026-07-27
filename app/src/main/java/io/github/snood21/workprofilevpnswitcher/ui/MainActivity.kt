@@ -1,7 +1,6 @@
 package io.github.snood21.workprofilevpnswitcher.ui
 
 import android.Manifest
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -46,7 +45,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etPollInterval: EditText
     private lateinit var pollIntervalContainer: View
 
-    private lateinit var btnLanguage: Button
+    private lateinit var btnInterfaceSettings: Button
+    private lateinit var btnLoggingSettings: Button
     private lateinit var btnAbout: Button
 
     private lateinit var btnAddApp: Button
@@ -71,15 +71,6 @@ class MainActivity : AppCompatActivity() {
         listOf(
             getString(R.string.list_mode_denylist),
             getString(R.string.list_mode_allowlist)
-        )
-    }
-
-    // Данные для выбора языка: code → display name
-    private val languages by lazy {
-        listOf(
-            "" to getString(R.string.lang_system),
-            "ru" to getString(R.string.lang_ru),
-            "en" to getString(R.string.lang_en)
         )
     }
 
@@ -126,15 +117,13 @@ class MainActivity : AppCompatActivity() {
         switchMonitoring = findViewById(R.id.switch_monitoring)
         switchRestoreState = findViewById(R.id.switch_restore_state)
         switchDisableOnProfileEnable = findViewById(R.id.switch_disable_on_profile_enable)
-
         spinnerListMode = findViewById(R.id.spinner_list_mode)
         tvListModeDesc = findViewById(R.id.tv_list_mode_desc)
-
         switchPolling = findViewById(R.id.switch_polling)
         etPollInterval = findViewById(R.id.et_poll_interval)
         pollIntervalContainer = findViewById(R.id.poll_interval_container)
-
-        btnLanguage = findViewById(R.id.btn_language)
+        btnInterfaceSettings = findViewById(R.id.btn_interface_settings)
+        btnLoggingSettings = findViewById(R.id.btn_logging_settings)
         btnAbout = findViewById(R.id.btn_about)
         btnAddApp = findViewById(R.id.btn_add_app)
         rvVpnApps = findViewById(R.id.rv_vpn_apps)
@@ -186,7 +175,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        btnLanguage.setOnClickListener { showLanguageDialog() }
+        btnInterfaceSettings.setOnClickListener {
+            startActivity(Intent(this, InterfaceSettingsActivity::class.java))
+        }
+
+        btnLoggingSettings.setOnClickListener {
+            startActivity(Intent(this, LoggingSettingsActivity::class.java))
+        }
 
         btnAbout.setOnClickListener {
             startActivity(Intent(this, AboutActivity::class.java))
@@ -216,7 +211,6 @@ class MainActivity : AppCompatActivity() {
         etPollInterval.setText((settings.pollIntervalMs / 1000).toString())
         pollIntervalContainer.visibility = if (settings.pollingEnabled) View.VISIBLE else View.GONE
 
-        updateLanguageButton()
         refreshAppList()
         setupListeners()
     }
@@ -226,31 +220,6 @@ class MainActivity : AppCompatActivity() {
             if (isAllowlist) R.string.desc_list_mode_allowlist
             else R.string.desc_list_mode_denylist
         )
-    }
-
-    private fun showLanguageDialog() {
-        val displayNames = languages.map { it.second }.toTypedArray()
-        val currentCode = settings.appLanguage
-        val currentIndex = languages.indexOfFirst { it.first == currentCode }.coerceAtLeast(0)
-
-        AlertDialog.Builder(this)
-            .setTitle(getString(R.string.section_language))
-            .setSingleChoiceItems(displayNames, currentIndex) { dialog, which ->
-                dialog.dismiss()
-                val selectedCode = languages[which].first
-                if (selectedCode != currentCode) {
-                    LanguageUtils.changeLanguage(this, selectedCode)
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
-    }
-
-    private fun updateLanguageButton() {
-        val currentCode = settings.appLanguage
-        val displayName = languages.firstOrNull { it.first == currentCode }?.second
-            ?: getString(R.string.lang_system)
-        btnLanguage.text = displayName
     }
 
     private fun savePollInterval() {

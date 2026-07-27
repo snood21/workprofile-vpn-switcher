@@ -39,7 +39,12 @@ object VpnUtils {
     ): String? {
         val ownerUid = caps.ownerUid
         if (ownerUid >= 0) {
-            val candidate = context.packageManager.getPackagesForUid(ownerUid)?.firstOrNull()
+            val packagesForUid = context.packageManager.getPackagesForUid(ownerUid)
+            // UID теоретически может соответствовать нескольким пакетам (shared UID) —
+            // ищем среди них тот, что реально находится в списке мониторинга,
+            // вместо того чтобы слепо брать первый пакет из массива.
+            val candidate = packagesForUid?.firstOrNull { settings.isVpnPackageMonitored(it) }
+                ?: packagesForUid?.firstOrNull()
             return if (candidate != null && settings.isVpnPackageMonitored(candidate)) {
                 Logger.d(TAG) {"VPN identified by ownerUid: $candidate"}
                 candidate

@@ -28,6 +28,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
+        android:name=".WorkProfileVpnApplication"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -55,6 +56,16 @@
             android:name=".ui.AboutActivity"
             android:exported="false"
             android:label="@string/action_about" />
+
+        <activity
+            android:name=".ui.InterfaceSettingsActivity"
+            android:exported="false"
+            android:label="@string/action_interface_settings" />
+
+        <activity
+            android:name=".ui.LoggingSettingsActivity"
+            android:exported="false"
+            android:label="@string/action_logging_settings" />
 
         <service
             android:name=".service.VpnMonitorService"

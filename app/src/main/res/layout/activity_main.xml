@@ -65,7 +65,7 @@
             android:text="@string/section_monitoring"
             android:textSize="12sp"
             android:textAllCaps="true"
-            android:textColor="@color/section_header"
+            android:textColor="?attr/colorPrimary"
             android:layout_marginBottom="8dp" />
 
         <LinearLayout
@@ -112,7 +112,7 @@
             android:text="@string/section_settings"
             android:textSize="12sp"
             android:textAllCaps="true"
-            android:textColor="@color/section_header"
+            android:textColor="?attr/colorPrimary"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp" />
 
@@ -239,7 +239,7 @@
                 android:text="@string/section_vpn_apps"
                 android:textSize="12sp"
                 android:textAllCaps="true"
-                android:textColor="@color/section_header" />
+                android:textColor="?attr/colorPrimary" />
 
             <Button
                 android:id="@+id/btn_add_app"
@@ -271,7 +271,7 @@
             android:text="@string/section_advanced"
             android:textSize="12sp"
             android:textAllCaps="true"
-            android:textColor="@color/section_header"
+            android:textColor="?attr/colorPrimary"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp" />
 
@@ -347,32 +347,21 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Язык — кнопка открывающая диалог -->
-        <LinearLayout
+        <!-- Интерфейс (язык + тема) -->
+        <Button
+            android:id="@+id/btn_interface_settings"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_card"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="4dp">
+            android:text="@string/action_interface_settings"
+            android:layout_marginTop="16dp" />
 
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/section_language"
-                android:textSize="16sp" />
-
-            <Button
-                android:id="@+id/btn_language"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:minWidth="48dp"
-                android:minHeight="48dp" />
-        </LinearLayout>
+        <!-- Логирование -->
+        <Button
+            android:id="@+id/btn_logging_settings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/action_logging_settings"
+            android:layout_marginTop="8dp" />
 
         <!-- О программе -->
         <Button
@@ -380,7 +369,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/action_about"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="8dp" />
             <!--style="@style/Widget.AppCompat.Button.Borderless" /> -->
     </LinearLayout>
 

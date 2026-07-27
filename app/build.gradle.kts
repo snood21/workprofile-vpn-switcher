@@ -11,14 +11,14 @@ plugins {
 
 android {
     namespace = "io.github.snood21.workprofilevpnswitcher"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "io.github.snood21.workprofilevpnswitcher"
         minSdk = 30
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        targetSdk = 37
+        versionCode = 2
+        versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -26,18 +26,44 @@ android {
         buildConfig = true
     }
 
+    data class ReleaseSigningCredentials(
+        val keystorePath: String,
+        val keystorePassword: String,
+        val keyAlias: String,
+        val keyPassword: String
+    )
+
+    val releaseSigningCredentials: ReleaseSigningCredentials? = run {
+        val keystorePath = System.getenv("KEYSTORE_PATH") ?: localProperties["keystore.path"] as String?
+        val keystorePassword = System.getenv("KEYSTORE_PASSWORD") ?: localProperties["keystore.password"] as String?
+        val signingKeyAlias = System.getenv("KEY_ALIAS") ?: localProperties["key.alias"] as String?
+        val signingKeyPassword = System.getenv("KEY_PASSWORD") ?: localProperties["key.password"] as String?
+
+        if (!keystorePath.isNullOrBlank() && !keystorePassword.isNullOrBlank() &&
+            !signingKeyAlias.isNullOrBlank() && !signingKeyPassword.isNullOrBlank()
+        ) {
+            ReleaseSigningCredentials(keystorePath, keystorePassword, signingKeyAlias, signingKeyPassword)
+        } else {
+            null
+        }
+    }
+
     signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("KEYSTORE_PATH") ?: localProperties["keystore.path"] as String)
-            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: localProperties["keystore.password"] as String
-            keyAlias = System.getenv("KEY_ALIAS") ?: localProperties["key.alias"] as String
-            keyPassword = System.getenv("KEY_PASSWORD") ?: localProperties["key.password"] as String
+        releaseSigningCredentials?.let { credentials ->
+            create("release") {
+                storeFile = file(credentials.keystorePath)
+                storePassword = credentials.keystorePassword
+                keyAlias = credentials.keyAlias
+                keyPassword = credentials.keyPassword
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            if (releaseSigningCredentials != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

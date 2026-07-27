@@ -24,7 +24,17 @@ class AppSettings(context: Context) {
         private const val KEY_POLLING_ENABLED = "polling_enabled"
         private const val KEY_POLL_INTERVAL_MS = "poll_interval_ms"
         private const val KEY_APP_LANGUAGE = "app_language"
+        private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_LOGGING_ENABLED = "logging_enabled"
+        private const val KEY_LOG_MAX_SIZE_KB = "log_max_size_kb"
         const val DEFAULT_POLL_INTERVAL_MS = 3000L
+
+        // Значения themeMode
+        const val THEME_MODE_SYSTEM = "system"
+        const val THEME_MODE_LIGHT = "light"
+        const val THEME_MODE_DARK = "dark"
+
+        const val DEFAULT_LOG_MAX_SIZE_KB = 512
     }
 
     // --- VPN-пакеты ---
@@ -113,4 +123,20 @@ class AppSettings(context: Context) {
     var appLanguage: String
         get() = prefs.getString(KEY_APP_LANGUAGE, "") ?: ""
         set(value) = prefs.edit { putString(KEY_APP_LANGUAGE, value) }
+
+    // --- Тема ---
+
+    var themeMode: String
+        get() = prefs.getString(KEY_THEME_MODE, THEME_MODE_SYSTEM) ?: THEME_MODE_SYSTEM
+        set(value) = prefs.edit { putString(KEY_THEME_MODE, value) }
+
+    // --- Логирование ---
+
+    var loggingEnabled: Boolean
+        get() = prefs.getBoolean(KEY_LOGGING_ENABLED, false)
+        set(value) = prefs.edit { putBoolean(KEY_LOGGING_ENABLED, value) }
+
+    var logMaxSizeKb: Int
+        get() = prefs.getInt(KEY_LOG_MAX_SIZE_KB, DEFAULT_LOG_MAX_SIZE_KB)
+        set(value) = prefs.edit { putInt(KEY_LOG_MAX_SIZE_KB, value) }
 }

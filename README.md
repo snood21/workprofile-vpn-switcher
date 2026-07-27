@@ -25,6 +25,8 @@
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/2.jpg" width="200" alt="Скриншот интерфейса2"/></td>
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/3.jpg" width="200" alt="Скриншот интерфейса3"/></td>
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/4.jpg" width="200" alt="Скриншот интерфейса4"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/5.jpg" width="200" alt="Скриншот интерфейса5"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/ru-RU/images/phoneScreenshots/6.jpg" width="200" alt="Скриншот интерфейса6"/></td>
   </tr>
 </table>
 
@@ -86,6 +88,14 @@ adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.M
 | `VIBRATE`                | Тактильная обратная связь                        |
 | `MODIFY_QUIET_MODE`      | Управление рабочим профилем (выдаётся через ADB) |
 
+### Известные ограничения
+
+**Определение рабочего профиля.** Приложение определяет рабочий профиль как первый пользовательский профиль на устройстве, отличный от основного (личного). На большинстве устройств с одним настроенным рабочим профилем это работает корректно. Однако если на устройстве присутствует более одного дополнительного профиля — например, второй пользователь, гостевой профиль, приватное пространство (Android 15+) или clone-профиль некоторых производителей — приложение может ошибочно выбрать не тот профиль.
+
+Публичный Android API не предоставляет стороннему приложению надёжного способа однозначно определить, какой именно из нескольких дополнительных профилей является управляемым (рабочим) — точная проверка (`UserManager.isManagedProfile`) либо требует специальных разрешений, недоступных обычным приложениям, либо ограничена контекстом текущего пользователя.
+
+**Рекомендация:** если на вашем устройстве настроен только один дополнительный (рабочий) профиль, ограничение не проявляется. Если профилей несколько — поведение приложения не гарантировано; проверьте результат вручную после настройки.
+
 ### Сборка из исходников
 
 ```bash
@@ -126,6 +136,8 @@ An Android application that automatically manages the work profile when a VPN co
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.jpg" width="200" alt="Interface screen2"/></td>
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.jpg" width="200" alt="Interface screen3"/></td>
     <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.jpg" width="200" alt="Interface screen4"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/5.jpg" width="200" alt="Interface screen5"/></td>
+    <td><img src="https://raw.githubusercontent.com/snood21/workprofile-vpn-switcher/master/fastlane/metadata/android/en-US/images/phoneScreenshots/6.jpg" width="200" alt="Interface screen6"/></td>
   </tr>
 </table>
 
@@ -186,6 +198,14 @@ You may also need to:
 | `POST_NOTIFICATIONS`     | Profile block notifications           |
 | `VIBRATE`                | Haptic feedback                       |
 | `MODIFY_QUIET_MODE`      | Manage work profile (granted via ADB) |
+
+### Known limitations
+
+**Work profile detection.** The app identifies the work profile as the first user profile on the device that differs from the primary (personal) one. On most devices with a single configured work profile this works correctly. However, if the device has more than one additional profile — for example, a second user, a guest profile, private space (Android 15+), or a vendor-specific clone profile — the app may pick the wrong profile.
+
+The public Android API does not give a third-party app a reliable way to determine which of several additional profiles is specifically the managed (work) profile — the precise check (`UserManager.isManagedProfile`) either requires special permissions unavailable to regular apps, or is limited to the current user's own context.
+
+**Recommendation:** if your device has only one additional (work) profile configured, this limitation does not apply. If there are multiple, the app's behavior is not guaranteed — verify the result manually after setup.
 
 ### Build from source
 

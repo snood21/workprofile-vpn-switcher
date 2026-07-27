@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import io.github.snood21.workprofilevpnswitcher.ui.MainActivity
 import java.util.Locale
 
 object LanguageUtils {
@@ -25,14 +26,19 @@ object LanguageUtils {
     }
 
     /**
-     * Сменить язык и перезапустить Activity.
+     * Сменить язык и перезапустить весь стек Activity.
+     * Пересоздания только текущей Activity недостаточно: остальные Activity
+     * в стеке (например, MainActivity, из которой был открыт этот экран)
+     * уже применили старую локаль в своём attachBaseContext и не пересоздаются
+     * автоматически при изменении настройки — поэтому перезапускаем задачу целиком.
      */
     fun changeLanguage(activity: Activity, languageCode: String) {
         val settings = AppSettings(activity)
         settings.appLanguage = languageCode
-        val intent = activity.intent
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        activity.finish()
+
+        val intent = Intent(activity, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         activity.startActivity(intent)
+        activity.finish()
     }
 }
