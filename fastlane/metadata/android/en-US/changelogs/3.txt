@@ -1,0 +1,4 @@
+* Fixed VPN detection via NetworkCallback — removed the incorrect NET_CAPABILITY_NOT_VPN requirement
+* Disabled automatic backup of application data
+* Fixed enabling the work profile while the screen is locked — the user is notified, and the profile is automatically enabled upon the first unlock
+* Minor fixes and stability improvements

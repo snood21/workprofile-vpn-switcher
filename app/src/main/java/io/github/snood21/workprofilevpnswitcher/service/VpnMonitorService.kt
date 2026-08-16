@@ -4,8 +4,10 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -42,9 +44,12 @@ class VpnMonitorService : Service() {
     companion object {
         private const val TAG = "VpnMonitorService"
         private const val NOTIFICATION_ID = 1001
+        private const val NOTIFICATION_ID_ENABLE_FAILED = 1003
         private const val CHANNEL_ID = "vpn_monitor_channel"
+        private const val CHANNEL_ID_ALERT = "vpn_block_alert_channel"
         private const val REQUEST_CODE_OPEN_APP = 1101
         private const val REQUEST_CODE_STOP = 1102
+        private const val MAX_ENABLE_RETRIES = 3
         const val ACTION_START = "io.github.snood21.workprofilevpnswitcher.START"
         const val ACTION_STOP = "io.github.snood21.workprofilevpnswitcher.STOP"
         fun startIntent(context: Context) =
@@ -58,6 +63,18 @@ class VpnMonitorService : Service() {
     private var activeVpn: Pair<Network, String>? = null
     private var monitoringStarted = false
     private var lastWorkProfileBlockTime = 0L
+    // Ожидание включения профиля, отклонённого системой (требуется разблокировка
+    // пользователем — см. requestQuietModeEnabled). Сбрасывается при успешном
+    // включении или при повторном появлении отслеживаемого VPN (см. handleVpnAppeared).
+    private var pendingEnableRetries = 0
+    private var userPresentReceiverRegistered = false
+    private val userPresentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action != Intent.ACTION_USER_PRESENT) return
+            if (pendingEnableRetries <= 0) return
+            retryEnableWorkProfile()
+        }
+    }
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
         override fun onCapabilitiesChanged(
             network: Network,
@@ -112,6 +129,11 @@ class VpnMonitorService : Service() {
     }
     // --- Мониторинг ---
     private fun startMonitoring() {
+        if (!userPresentReceiverRegistered) {
+            registerReceiver(userPresentReceiver, IntentFilter(Intent.ACTION_USER_PRESENT))
+            userPresentReceiverRegistered = true
+        }
+
         if (monitoringStarted) {
             handler.removeCallbacks(pollRunnable)
 
@@ -125,6 +147,7 @@ class VpnMonitorService : Service() {
 
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
             .build()
 
         connectivityManager.registerNetworkCallback(request, networkCallback)
@@ -146,6 +169,14 @@ class VpnMonitorService : Service() {
 
             monitoringStarted = false
         }
+
+        if (userPresentReceiverRegistered) {
+            try {
+                unregisterReceiver(userPresentReceiver)
+            } catch (_: Exception) {}
+            userPresentReceiverRegistered = false
+        }
+        pendingEnableRetries = 0
         activeVpn = null
     }
     // --- Обработка событий VPN ---
@@ -161,6 +192,12 @@ class VpnMonitorService : Service() {
 
         val wasMonitoringVpn = activeVpn != null
         activeVpn = network to vpnPackage
+
+        if (pendingEnableRetries > 0) {
+            Logger.d(TAG) {"Monitored VPN reappeared — cancelling pending work profile enable retry"}
+            pendingEnableRetries = 0
+            cancelEnableFailedNotification()
+        }
 
         val isActive = workProfileManager.isWorkProfileActive()
         if (isActive == null) {
@@ -195,14 +232,44 @@ class VpnMonitorService : Service() {
         val savedState = settings.getSavedProfileState()
         when {
             savedState == null -> Logger.d(TAG) {"No saved state found, nothing to restore"}
-            savedState -> {
-                val success = workProfileManager.enableWorkProfile()
-                Logger.d(TAG) {"Restore work profile result: $success"}
-            }
+            savedState -> attemptEnableWorkProfile()
             else -> Logger.d(TAG) {"Saved state was inactive, not restoring"}
         }
         settings.clearSavedProfileState()
         updateNotification(vpnActive = false)
+    }
+    /**
+     * Попытаться включить рабочий профиль. Если система отклонила запрос
+     * (обычно требуется разблокировка экрана пользователем — см.
+     * WorkProfileManager.enableWorkProfile), запоминаем ожидание и
+     * показываем уведомление; повтор произойдёт по ACTION_USER_PRESENT
+     * (см. userPresentReceiver), не чаще MAX_ENABLE_RETRIES раз.
+     */
+    private fun attemptEnableWorkProfile() {
+        val success = workProfileManager.enableWorkProfile()
+        Logger.d(TAG) {"Restore work profile result: $success"}
+        if (success) {
+            pendingEnableRetries = 0
+            cancelEnableFailedNotification()
+        } else {
+            pendingEnableRetries = 1
+            showEnableFailedNotification()
+        }
+    }
+    private fun retryEnableWorkProfile() {
+        if (pendingEnableRetries >= MAX_ENABLE_RETRIES) {
+            Logger.w(TAG) {"enableWorkProfile: retry limit reached ($MAX_ENABLE_RETRIES), giving up automatic retries"}
+            pendingEnableRetries = 0
+            return
+        }
+        pendingEnableRetries++
+        Logger.d(TAG) {"Retrying enableWorkProfile after ACTION_USER_PRESENT (attempt $pendingEnableRetries/$MAX_ENABLE_RETRIES)"}
+        val success = workProfileManager.enableWorkProfile()
+        Logger.d(TAG) {"Retry enableWorkProfile result: $success"}
+        if (success) {
+            pendingEnableRetries = 0
+            cancelEnableFailedNotification()
+        }
     }
     private fun checkVpnState() {
         //Альтернативы для получения всех текущих сетей без callback нет в публичном API
@@ -292,5 +359,31 @@ class VpnMonitorService : Service() {
     private fun updateNotification(vpnActive: Boolean = false) {
         getSystemService(NotificationManager::class.java)
             .notify(NOTIFICATION_ID, buildNotification(vpnActive))
+    }
+    private fun showEnableFailedNotification() {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+
+        // Тот же канал, что и WorkProfileReceiver (CHANNEL_ID_ALERT) — создание
+        // идемпотентно, если канал уже существует, повторный вызов ничего не меняет.
+        val channel = NotificationChannel(
+            CHANNEL_ID_ALERT,
+            getString(R.string.notification_channel_alert_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            setShowBadge(false)
+        }
+        notificationManager.createNotificationChannel(channel)
+
+        val notification = Notification.Builder(this, CHANNEL_ID_ALERT)
+            .setContentTitle(getString(R.string.notification_enable_failed_title))
+            .setContentText(getString(R.string.notification_enable_failed_text))
+            .setSmallIcon(R.drawable.ic_notification)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID_ENABLE_FAILED, notification)
+    }
+    private fun cancelEnableFailedNotification() {
+        getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID_ENABLE_FAILED)
     }
 }

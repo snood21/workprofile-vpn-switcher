@@ -94,6 +94,8 @@
     <string name="notification_channel_alert_name">VPN block alert</string>
     <string name="notification_blocked_title">Work profile blocked</string>
     <string name="notification_blocked_text">Disconnect active VPN to enable work profile</string>
+    <string name="notification_enable_failed_title">Could not enable work profile</string>
+    <string name="notification_enable_failed_text">Unlock your screen to finish enabling it</string>
 
     <!-- About -->
     <string name="about_boosty">Boosty</string>

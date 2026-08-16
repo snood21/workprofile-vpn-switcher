@@ -94,6 +94,8 @@
     <string name="notification_channel_alert_name">VPN блокировка</string>
     <string name="notification_blocked_title">Рабочий профиль заблокирован</string>
     <string name="notification_blocked_text">Для включения рабочего профиля отключите активный VPN</string>
+    <string name="notification_enable_failed_title">Не удалось включить рабочий профиль</string>
+    <string name="notification_enable_failed_text">Разблокируйте экран, чтобы завершить включение</string>
 
     <!-- О программе -->
     <string name="about_boosty">Boosty</string>
