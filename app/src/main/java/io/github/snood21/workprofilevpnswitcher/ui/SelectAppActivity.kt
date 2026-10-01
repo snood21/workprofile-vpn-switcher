@@ -78,6 +78,10 @@ class SelectAppActivity : AppCompatActivity() {
                 val vpnPackages = packageManager.queryIntentServices(vpnIntent, 0)
                     .map { it.serviceInfo.packageName }
                     .distinct()
+                    // Собственный StealthVpnService тоже регистрируется через этот
+                    // intent-filter (это требование самого VpnService API), но он
+                    // не является VPN-клиентом для выбора — исключаем явно.
+                    .filterNot { it == packageName }
 
                 vpnPackages.mapNotNull { pkg ->
                     try {

@@ -13,12 +13,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
-import android.os.VibrationEffect
-import android.os.Vibrator
 import io.github.snood21.workprofilevpnswitcher.R
 import io.github.snood21.workprofilevpnswitcher.ui.MainActivity
 import io.github.snood21.workprofilevpnswitcher.util.AppSettings
-import io.github.snood21.workprofilevpnswitcher.util.AppSettings.Companion.DEFAULT_POLL_INTERVAL_MS
 import io.github.snood21.workprofilevpnswitcher.util.FileLogger
 import io.github.snood21.workprofilevpnswitcher.util.Logger
 import io.github.snood21.workprofilevpnswitcher.util.VpnUtils
@@ -62,7 +59,6 @@ class VpnMonitorService : Service() {
     private lateinit var connectivityManager: ConnectivityManager
     private var activeVpn: Pair<Network, String>? = null
     private var monitoringStarted = false
-    private var lastWorkProfileBlockTime = 0L
     // Ожидание включения профиля, отклонённого системой (требуется разблокировка
     // пользователем — см. requestQuietModeEnabled). Сбрасывается при успешном
     // включении или при повторном появлении отслеживаемого VPN (см. handleVpnAppeared).
@@ -295,29 +291,15 @@ class VpnMonitorService : Service() {
             }
         }
 
-        if (activeVpn != null) {
-            checkAndDisableWorkProfileIfNeeded()
-        }
-    }
-    private fun checkAndDisableWorkProfileIfNeeded() {
-        if (!settings.disableVpnOnProfileEnable) return
-        val isActive = workProfileManager.isWorkProfileActive() ?: return
-        if (!isActive) return
-        val now = System.currentTimeMillis()
-        val cooldown = if (settings.pollingEnabled) settings.pollIntervalMs else DEFAULT_POLL_INTERVAL_MS
-        if (now - lastWorkProfileBlockTime < cooldown) return
-        lastWorkProfileBlockTime = now
-        Logger.d(TAG) {"Work profile is active while monitored VPN running — disabling"}
-        val success = workProfileManager.disableWorkProfile()
-        Logger.d(TAG) {"Auto-disable work profile result: $success"}
-        if (success) {
-            try {
-                val vibrator = getSystemService(Vibrator::class.java)
-                vibrator.vibrate(VibrationEffect.createOneShot(300, VibrationEffect.DEFAULT_AMPLITUDE))
-            } catch (e: Exception) {
-                Logger.w(TAG) {"Vibration failed: ${e.message}"}
-            }
-        }
+        // Реакция на ручное включение рабочего профиля больше не выполняется здесь —
+        // только через WorkProfileReceiver (ACTION_MANAGED_PROFILE_AVAILABLE).
+        // Причина: вызов requestQuietModeEnabled() из periodic-проверки может
+        // попасть в момент, когда система ещё не завершила предыдущий переход
+        // состояния профиля — на некоторых устройствах (подтверждено на Huawei
+        // EMUI/HarmonyOS) это приводит к крашу system_server. Реакция на системный
+        // broadcast гарантированно происходит только после завершения перехода
+        // (см. документацию UserManager.requestQuietModeEnabled), поэтому не подвержена
+        // этой гонке.
     }
     // --- Уведомление ---
     private fun createNotificationChannel() {

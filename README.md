@@ -36,10 +36,10 @@
 
 - **Автоматическое отключение** рабочего профиля при подключении VPN
 - **Восстановление состояния** профиля после отключения VPN (опционально)
-- **Обратная логика** — отключать профиль если он был включён вручную при активном VPN (опционально)
+- **Отслеживание ручного включения** профиля при активном VPN (опционально) — по выбору: отключать профиль обратно, либо отключать сам VPN через заглушку, оставляя профиль включённым (требует разрешения на VPN-подключение)
 - **Режим allowlist** — мониторить только выбранные VPN-приложения
 - **Режим denylist** — мониторить все VPN, кроме исключённых (в первую очередь для корректной работы совместно с AdGuard)
-- **Фоновый опрос** — резервный механизм для устройств, где события сети подавляются ОС
+- **Фоновый опрос** — резервный механизм обнаружения VPN
 - **Мультиязычность** — русский и английский интерфейс
 
 ### Требования
@@ -69,9 +69,9 @@ adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.M
    - *Только выбранные приложения* — срабатывает только на VPN-приложения из списка
 4. Включить **Мониторинг**
 
-#### Если автоматическое отключение не срабатывает
+#### Если автоматическое отключение профиля не срабатывает
 
-Некоторые прошивки (в том числе MIUI/HyperOS) подавляют события смены сети для фоновых приложений. В этом случае включите **Фоновый опрос** в разделе Расширенные настройки.
+Если на вашем устройстве отключение профиля при подключении VPN работает нестабильно, включите **Фоновый опрос** в разделе Расширенные настройки — это резервный механизм обнаружения VPN, не влияющий на реакцию на ручное включение профиля (она всегда работает через системное событие, независимо от Фонового опроса).
 
 Также необходимо:
 - Разрешить автозапуск приложения в настройках телефона
@@ -87,6 +87,7 @@ adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.M
 | `POST_NOTIFICATIONS`     | Уведомления о блокировке профиля                 |
 | `VIBRATE`                | Тактильная обратная связь                        |
 | `MODIFY_QUIET_MODE`      | Управление рабочим профилем (выдаётся через ADB) |
+| VPN-подключение (`VpnService.prepare()`) | Заглушка VPN — согласие запрашивается системным диалогом при включении соответствующей опции, не через ADB |
 
 ### Известные ограничения
 
@@ -147,10 +148,10 @@ An Android application that automatically manages the work profile when a VPN co
 
 - **Automatic disabling** of the work profile when VPN connects
 - **State restoration** after VPN disconnects (optional)
-- **Reverse logic** — disable profile if manually enabled while VPN is active
+- **Tracking manual activation** of the profile while a VPN is active (optional) — choose whether to disable the profile again, or disable the VPN itself via a dummy VPN instead, keeping the profile enabled (requires VPN connection permission)
 - **Allowlist mode** — monitor only selected VPN apps
 - **Denylist mode** — monitor all VPN connections except excluded apps (e.g. AdGuard)
-- **Background polling** — fallback mechanism for devices where network events are suppressed by the OS
+- **Background polling** — fallback VPN-detection mechanism
 - **Multilingual** — Russian and English interface
 
 ### Requirements
@@ -180,9 +181,9 @@ adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.M
    - *Only selected apps* — triggers only for VPN apps in the list
 4. Enable **Monitoring**
 
-#### If automatic switching does not work
+#### If automatic profile disabling does not work
 
-Some firmware (including MIUI/HyperOS) suppresses network change events for background apps. In this case, enable **Background polling** in the Advanced settings section.
+If profile disabling on VPN connect works unreliably on your device, enable **Background polling** in the Advanced settings section — this is a fallback VPN-detection mechanism and does not affect the reaction to manually enabling the profile (which always relies on the system event, regardless of Background polling).
 
 You may also need to:
 - Allow autostart for the app in phone settings
@@ -198,6 +199,7 @@ You may also need to:
 | `POST_NOTIFICATIONS`     | Profile block notifications           |
 | `VIBRATE`                | Haptic feedback                       |
 | `MODIFY_QUIET_MODE`      | Manage work profile (granted via ADB) |
+| VPN connection (`VpnService.prepare()`) | Dummy VPN — consent requested via a system dialog when enabling the corresponding option, not via ADB |
 
 ### Known limitations
 

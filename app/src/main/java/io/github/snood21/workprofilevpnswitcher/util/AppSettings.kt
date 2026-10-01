@@ -19,6 +19,7 @@ class AppSettings(context: Context) {
         private const val KEY_SAVED_PROFILE_STATE = "saved_profile_state"
         private const val KEY_HAS_SAVED_STATE = "has_saved_state"
         private const val KEY_MONITORING_ENABLED = "monitoring_enabled"
+        private const val KEY_MONITOR_PROFILE_ENABLE = "monitor_profile_enable"
         private const val KEY_DISABLE_VPN_ON_PROFILE_ENABLE = "disable_vpn_on_profile_enable"
         private const val KEY_LIST_MODE_ALLOWLIST = "list_mode_allowlist"
         private const val KEY_POLLING_ENABLED = "polling_enabled"
@@ -103,6 +104,10 @@ class AppSettings(context: Context) {
     var monitoringEnabled: Boolean
         get() = prefs.getBoolean(KEY_MONITORING_ENABLED, false)
         set(value) = prefs.edit { putBoolean(KEY_MONITORING_ENABLED, value) }
+
+    var monitorProfileEnable: Boolean
+        get() = prefs.getBoolean(KEY_MONITOR_PROFILE_ENABLE, false)
+        set(value) = prefs.edit { putBoolean(KEY_MONITOR_PROFILE_ENABLE, value) }
 
     var disableVpnOnProfileEnable: Boolean
         get() = prefs.getBoolean(KEY_DISABLE_VPN_ON_PROFILE_ENABLE, false)

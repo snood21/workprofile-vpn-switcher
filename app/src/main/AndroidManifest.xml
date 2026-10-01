@@ -76,6 +76,17 @@
                 android:value="VPN/work profile monitoring for switch" />
         </service>
 
+        <!-- VPN-заглушка для принудительного отключения активного VPN-клиента.
+             Требует согласия пользователя через VpnService.prepare() (см. MainActivity). -->
+        <service
+            android:name=".service.StealthVpnService"
+            android:permission="android.permission.BIND_VPN_SERVICE"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.net.VpnService" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".receiver.BootReceiver"
             android:exported="true">

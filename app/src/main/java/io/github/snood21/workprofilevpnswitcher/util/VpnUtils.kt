@@ -3,12 +3,15 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
+import android.os.Process
 
 /**
  * Утилиты для определения активных VPN-подключений.
  * Используется из WorkProfileReceiver для обратной логики.
  *
  * Логика определения пакета (в порядке приоритета):
+ * 0. Собственный VPN приложения (StealthVpnService) — всегда игнорируется,
+ *    независимо от режима списка (allowlist/denylist)
  * 1. ownerUid — точная идентификация
  * 2. NetworkInfo.extraInfo — "VPN:<package>" (deprecated, работает на HyperOS)
  * 3. Fallback — зависит от режима списка (shouldMonitorUnknownVpn)
@@ -38,6 +41,13 @@ object VpnUtils {
         settings: AppSettings
     ): String? {
         val ownerUid = caps.ownerUid
+        if (ownerUid >= 0 && ownerUid == Process.myUid()) {
+            // Собственный VPN (StealthVpnService) — не считается сторонним VPN
+            // ни в каком режиме списка, иначе его же мгновенное появление/
+            // исчезновение будет ошибочно воспринято как VPN-событие.
+            Logger.d(TAG) {"VPN owned by this app (StealthVpnService) — ignoring"}
+            return null
+        }
         if (ownerUid >= 0) {
             val packagesForUid = context.packageManager.getPackagesForUid(ownerUid)
             // UID теоретически может соответствовать нескольким пакетам (shared UID) —

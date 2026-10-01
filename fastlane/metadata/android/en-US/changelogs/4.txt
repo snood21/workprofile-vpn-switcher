@@ -1,0 +1,4 @@
+* New option — disable VPN on manual work profile activation (dummy VPN)
+* Separate setting for tracking work profile activation
+* Fixed a rare system crash on some devices when enabling the work profile
+* More precise notification wording

@@ -6,6 +6,10 @@ import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.ResultReceiver
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.media.RingtoneManager
@@ -13,15 +17,23 @@ import io.github.snood21.workprofilevpnswitcher.util.AppSettings
 import io.github.snood21.workprofilevpnswitcher.util.VpnUtils
 import io.github.snood21.workprofilevpnswitcher.util.WorkProfileManager
 import io.github.snood21.workprofilevpnswitcher.R
+import io.github.snood21.workprofilevpnswitcher.service.StealthVpnService
 import io.github.snood21.workprofilevpnswitcher.util.Logger
 
 /**
  * Отслеживает ручное включение рабочего профиля.
  *
- * Обратная логика: если пользователь включил рабочий профиль вручную,
- * а в это время активен VPN из списка — отключить рабочий профиль снова.
+ * Если пользователь включил рабочий профиль вручную, а в это время активен
+ * VPN из списка — выполняется одно из двух действий, в зависимости от
+ * AppSettings.disableVpnOnProfileEnable:
+ * - включена: отключить сам VPN через заглушку (StealthVpnService), профиль
+ *   остаётся включённым. Если заглушка не сработала (establish() вернул null
+ *   без исключения — возможно, например, если VPN уже был подготовлен другим
+ *   приложением на момент вызова), выполняется откат к старому поведению —
+ *   отключение профиля;
+ * - выключена: отключить рабочий профиль обратно (старое поведение).
  *
- * Настройка управляется через AppSettings.disableVpnOnProfileEnable.
+ * Обе ветки активны только если AppSettings.monitorProfileEnable включена.
  */
 class WorkProfileReceiver : BroadcastReceiver() {
 
@@ -29,6 +41,7 @@ class WorkProfileReceiver : BroadcastReceiver() {
         private const val TAG = "WorkProfileReceiver"
         private const val CHANNEL_ID_ALERT = "vpn_block_alert_channel"
         private const val NOTIFICATION_ID_BLOCKED = 1002
+        private const val STEALTH_VPN_RESULT_TIMEOUT_MS = 5000L
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -45,13 +58,13 @@ class WorkProfileReceiver : BroadcastReceiver() {
 
         Logger.d(TAG) {"Work profile enabled manually"}
 
-        if (!settings.disableVpnOnProfileEnable) {
-            Logger.d(TAG) {"disableVpnOnProfileEnable is off, skipping"}
+        if (!settings.monitoringEnabled) {
+            Logger.d(TAG) {"Monitoring disabled, skipping"}
             return
         }
 
-        if (!settings.monitoringEnabled) {
-            Logger.d(TAG) {"Monitoring disabled, skipping"}
+        if (!settings.monitorProfileEnable) {
+            Logger.d(TAG) {"Profile monitoring disabled, skipping"}
             return
         }
 
@@ -60,7 +73,62 @@ class WorkProfileReceiver : BroadcastReceiver() {
             return
         }
 
+        if (settings.disableVpnOnProfileEnable) {
+            Logger.d(TAG) {"Monitored VPN is active, attempting to disable VPN via stealth VPN"}
+            // BroadcastReceiver перестаёт быть валидным сразу после возврата
+            // из onReceive() — система может убить процесс до того, как придёт
+            // асинхронный результат от StealthVpnService. goAsync() продлевает
+            // жизнь ресивера до явного вызова pendingResult.finish().
+            val pendingResult = goAsync()
+            val handler = Handler(Looper.getMainLooper())
+            var finished = false
+
+            fun finishOnce(action: () -> Unit) {
+                if (finished) return
+                finished = true
+                action()
+                pendingResult.finish()
+            }
+
+            val resultReceiver = object : ResultReceiver(handler) {
+                override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+                    finishOnce {
+                        if (resultCode == StealthVpnService.RESULT_CODE_ENGAGED) {
+                            Logger.d(TAG) {"Stealth VPN succeeded"}
+                            vibrate(context)
+                            playSound(context)
+                            showNotification(
+                                context,
+                                R.string.notification_vpn_disabled_title,
+                                R.string.notification_vpn_disabled_text
+                            )
+                        } else {
+                            Logger.w(TAG) {"Stealth VPN failed — falling back to disabling work profile"}
+                            disableWorkProfileAndNotify(context)
+                        }
+                    }
+                }
+            }
+
+            // Защита от случая, если StealthVpnService никогда не ответит
+            // (например, если процесс сервиса был убит системой) — без этого
+            // pendingResult.finish() не вызвался бы вовсе.
+            handler.postDelayed({
+                finishOnce {
+                    Logger.w(TAG) {"Stealth VPN result timed out — falling back to disabling work profile"}
+                    disableWorkProfileAndNotify(context)
+                }
+            }, STEALTH_VPN_RESULT_TIMEOUT_MS)
+
+            context.startService(StealthVpnService.intent(context, resultReceiver))
+            return
+        }
+
         Logger.d(TAG) {"Monitored VPN is active, disabling work profile"}
+        disableWorkProfileAndNotify(context)
+    }
+
+    private fun disableWorkProfileAndNotify(context: Context) {
         val workProfileManager = WorkProfileManager(context)
         val success = workProfileManager.disableWorkProfile()
         Logger.d(TAG) {"Disable work profile result: $success"}
@@ -68,7 +136,11 @@ class WorkProfileReceiver : BroadcastReceiver() {
         if (success) {
             vibrate(context)
             playSound(context)
-            showNotification(context)
+            showNotification(
+                context,
+                R.string.notification_blocked_title,
+                R.string.notification_blocked_text
+            )
         }
     }
 
@@ -93,7 +165,7 @@ class WorkProfileReceiver : BroadcastReceiver() {
         }
     }
 
-    private fun showNotification(context: Context) {
+    private fun showNotification(context: Context, titleRes: Int, textRes: Int) {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
 
         // Создать канал с фиксированным ID
@@ -111,8 +183,8 @@ class WorkProfileReceiver : BroadcastReceiver() {
         notificationManager.createNotificationChannel(channel)
 
         val notification = Notification.Builder(context, CHANNEL_ID_ALERT)
-            .setContentTitle(context.getString(R.string.notification_blocked_title))
-            .setContentText(context.getString(R.string.notification_blocked_text))
+            .setContentTitle(context.getString(titleRes))
+            .setContentText(context.getString(textRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
             .setTimeoutAfter(5000)

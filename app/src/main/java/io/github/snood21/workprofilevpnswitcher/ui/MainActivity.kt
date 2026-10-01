@@ -8,6 +8,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -27,14 +28,20 @@ import io.github.snood21.workprofilevpnswitcher.R
 import io.github.snood21.workprofilevpnswitcher.service.VpnMonitorService
 import io.github.snood21.workprofilevpnswitcher.util.AppSettings
 import io.github.snood21.workprofilevpnswitcher.util.LanguageUtils
+import io.github.snood21.workprofilevpnswitcher.util.Logger
 import io.github.snood21.workprofilevpnswitcher.util.WorkProfileManager
 
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "MainActivity"
+    }
 
     private lateinit var settings: AppSettings
     private lateinit var workProfileManager: WorkProfileManager
 
     private lateinit var switchMonitoring: SwitchCompat
+    private lateinit var switchMonitorProfile: SwitchCompat
     private lateinit var switchRestoreState: SwitchCompat
     private lateinit var switchDisableOnProfileEnable: SwitchCompat
 
@@ -44,6 +51,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var switchPolling: SwitchCompat
     private lateinit var etPollInterval: EditText
     private lateinit var pollIntervalContainer: View
+    private lateinit var restoreStateContainer: View
+    private lateinit var monitorProfileEnableContainer: View
+    private lateinit var disableOnProfileEnableContainer: View
 
     private lateinit var btnInterfaceSettings: Button
     private lateinit var btnLoggingSettings: Button
@@ -115,6 +125,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViews() {
         switchMonitoring = findViewById(R.id.switch_monitoring)
+        switchMonitorProfile = findViewById(R.id.switch_monitor_profile_enable)
         switchRestoreState = findViewById(R.id.switch_restore_state)
         switchDisableOnProfileEnable = findViewById(R.id.switch_disable_on_profile_enable)
         spinnerListMode = findViewById(R.id.spinner_list_mode)
@@ -122,6 +133,9 @@ class MainActivity : AppCompatActivity() {
         switchPolling = findViewById(R.id.switch_polling)
         etPollInterval = findViewById(R.id.et_poll_interval)
         pollIntervalContainer = findViewById(R.id.poll_interval_container)
+        restoreStateContainer = findViewById(R.id.restore_state_container)
+        monitorProfileEnableContainer = findViewById(R.id.monitor_profile_enable_container)
+        disableOnProfileEnableContainer = findViewById(R.id.disable_on_profile_enable_container)
         btnInterfaceSettings = findViewById(R.id.btn_interface_settings)
         btnLoggingSettings = findViewById(R.id.btn_logging_settings)
         btnAbout = findViewById(R.id.btn_about)
@@ -143,14 +157,27 @@ class MainActivity : AppCompatActivity() {
             settings.monitoringEnabled = isChecked
             if (isChecked) startForegroundService(VpnMonitorService.startIntent(this))
             else startService(VpnMonitorService.stopIntent(this))
+            restoreStateContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+            monitorProfileEnableContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+            disableOnProfileEnableContainer.visibility =
+                if (isChecked && settings.monitorProfileEnable) View.VISIBLE else View.GONE
         }
 
         switchRestoreState.setOnCheckedChangeListener { _, isChecked ->
             settings.restoreProfileState = isChecked
         }
 
+        switchMonitorProfile.setOnCheckedChangeListener { _, isChecked ->
+            settings.monitorProfileEnable = isChecked
+            disableOnProfileEnableContainer.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+
         switchDisableOnProfileEnable.setOnCheckedChangeListener { _, isChecked ->
-            settings.disableVpnOnProfileEnable = isChecked
+            if (isChecked) {
+                requestStealthVpnConsent()
+            } else {
+                settings.disableVpnOnProfileEnable = false
+            }
         }
 
         // Spinner: адаптер и listener инициализируются вместе
@@ -195,13 +222,22 @@ class MainActivity : AppCompatActivity() {
     private fun loadState() {
         // Отключить listeners на время загрузки
         switchMonitoring.setOnCheckedChangeListener(null)
+        switchMonitorProfile.setOnCheckedChangeListener(null)
         switchRestoreState.setOnCheckedChangeListener(null)
         switchDisableOnProfileEnable.setOnCheckedChangeListener(null)
         switchPolling.setOnCheckedChangeListener(null)
 
         switchMonitoring.isChecked = settings.monitoringEnabled
+        switchMonitorProfile.isChecked = settings.monitorProfileEnable
         switchRestoreState.isChecked = settings.restoreProfileState
         switchDisableOnProfileEnable.isChecked = settings.disableVpnOnProfileEnable
+
+        monitorProfileEnableContainer.visibility =
+            if (settings.monitoringEnabled) View.VISIBLE else View.GONE
+        restoreStateContainer.visibility =
+            if (settings.monitoringEnabled) View.VISIBLE else View.GONE
+        disableOnProfileEnableContainer.visibility =
+            if (settings.monitoringEnabled && settings.monitorProfileEnable) View.VISIBLE else View.GONE
 
         // index 0 = denylist (по умолчанию), index 1 = allowlist
         spinnerListMode.setSelection(if (settings.listModeAllowlist) 1 else 0)
@@ -298,6 +334,38 @@ class MainActivity : AppCompatActivity() {
                 refreshAppList()
                 Toast.makeText(this, getString(R.string.app_added), Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    /**
+     * Запросить у пользователя согласие VpnService.prepare(), необходимое
+     * для работы StealthVpnService. Диалог показывается только один раз —
+     * если согласие уже дано ранее, prepare() вернёт null и включение
+     * настройки происходит без дополнительного взаимодействия.
+     *
+     * Переключатель включается только по факту полученного согласия —
+     * если пользователь отклонит системный диалог, switchDisableOnProfileEnable
+     * возвращается в выключенное состояние.
+     */
+    private fun requestStealthVpnConsent() {
+        val prepareIntent = VpnService.prepare(this)
+        if (prepareIntent == null) {
+            settings.disableVpnOnProfileEnable = true
+            return
+        }
+        stealthVpnConsentLauncher.launch(prepareIntent)
+    }
+
+    private val stealthVpnConsentLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            settings.disableVpnOnProfileEnable = true
+        } else {
+            Logger.w(TAG) { "VpnService.prepare() consent denied by user" }
+            switchDisableOnProfileEnable.isChecked = false
+            settings.disableVpnOnProfileEnable = false
+            Toast.makeText(this, getString(R.string.stealth_vpn_permission_denied), Toast.LENGTH_SHORT).show()
         }
     }
 }

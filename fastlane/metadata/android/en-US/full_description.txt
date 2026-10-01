@@ -1,14 +1,14 @@
-An Android application that automatically manages the work profile when a VPN connection is active.
+App for automatically managing an Android work profile when a VPN connects.
 
-When VPN connects, the work profile is disabled. When VPN disconnects, the previous state is optionally restored. Useful when the work profile contains apps that should not run through the VPN tunnel, or when you need to isolate work apps from VPN traffic.
+Monitors VPN connections and automatically disables the work profile while a VPN is active, then restores its state after the VPN disconnects. Useful when the work profile contains apps that should not run through the VPN tunnel, or conversely, when work apps need to be isolated from VPN traffic.
 
 Features:
 * Automatic disabling of the work profile when VPN connects
 * State restoration after VPN disconnects (optional)
-* Reverse logic — disable profile if manually enabled while VPN is active (optional)
+* Tracking manual work profile activation while a VPN is active (optional) — choose whether to disable the profile again, or disable the VPN itself instead, keeping the profile enabled (dummy VPN, requires VPN connection permission)
 * Allowlist mode — monitor only selected VPN apps
 * Denylist mode — monitor all VPN connections except excluded apps (useful for AdGuard)
-* Background polling — fallback for devices where network events are suppressed by the OS
+* Background polling — fallback VPN-detection mechanism
 * Russian and English interface
 
 Requirements:
@@ -16,7 +16,8 @@ Requirements:
 * A configured work profile (via Shelter or similar app)
 * MODIFY_QUIET_MODE permission — granted manually via ADB:
   adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.MODIFY_QUIET_MODE
+* For disabling VPN via the dummy VPN — VPN connection permission, requested through a system dialog when enabling that option
 
-Note: the permission must be re-granted after a clean reinstall. It persists through regular updates.
+Note: the MODIFY_QUIET_MODE permission must be re-granted after a clean reinstall. It persists through regular updates.
 
-If automatic switching does not work, enable Background polling in Advanced settings. Also allow autostart and set battery mode to No restrictions in system settings.
+If automatic profile disabling on VPN connect does not work, enable Background polling in Advanced settings. Also allow autostart and set battery mode to No restrictions in system settings.

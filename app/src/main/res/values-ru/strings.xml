@@ -20,8 +20,8 @@
     <string name="desc_restore_state">После отключения VPN вернуть профиль в исходное состояние. Если выключено — профиль остаётся неактивным</string>
 
     <!-- Переключатель обратной логики -->
-    <string name="label_disable_on_profile_enable">Отключать профиль при активном VPN</string>
-    <string name="desc_disable_on_profile_enable">Если рабочий профиль включается вручную при активном VPN — отключить профиль снова</string>
+    <string name="label_disable_vpn_on_profile_enable">Отключать VPN при включении рабочего профиля</string>
+    <string name="desc_disable_vpn_on_profile_enable">Если рабочий профиль включается вручную при активном VPN — отключать VPN. Будет использоваться VPN-заглушка и потребуется дать разрешение на VPN-подключение.</string>
 
     <!-- Режим списка -->
     <string name="label_list_mode">Режим мониторинга</string>
@@ -47,6 +47,7 @@
     <string name="action_remove">Удалить</string>
     <string name="action_stop">Остановить</string>
     <string name="app_added">Приложение добавлено</string>
+    <string name="stealth_vpn_permission_denied">Разрешение на VPN не получено — настройка не включена</string>
 
     <!-- Режим списка -->
     <string name="list_mode_denylist">Все VPN, кроме исключений</string>
@@ -94,6 +95,8 @@
     <string name="notification_channel_alert_name">VPN блокировка</string>
     <string name="notification_blocked_title">Рабочий профиль заблокирован</string>
     <string name="notification_blocked_text">Для включения рабочего профиля отключите активный VPN</string>
+    <string name="notification_vpn_disabled_title">VPN отключён</string>
+    <string name="notification_vpn_disabled_text">Активный VPN отключён, чтобы рабочий профиль остался включённым</string>
     <string name="notification_enable_failed_title">Не удалось включить рабочий профиль</string>
     <string name="notification_enable_failed_text">Разблокируйте экран, чтобы завершить включение</string>
 
@@ -108,4 +111,6 @@
     <string name="about_label_license">Лицензия</string>
     <string name="about_github">Репозиторий на GitHub</string>
     <string name="about_donate">Поддержать разработчика</string>
+    <string name="label_monitor_profile_enable">Отслеживать включение рабочего профиля</string>
+    <string name="desc_monitor_profile_enable">Отслеживать ручное включение рабочего профиля. Если имеется активный VPN, профиль будет отключён (или отключён сам VPN — см. настройку \"Отключать VPN при включении рабочего профиля\").</string>
 </resources>

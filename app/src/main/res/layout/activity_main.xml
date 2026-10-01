@@ -116,80 +116,142 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Восстанавливать состояние -->
+        <!-- Восстанавливать состояние + Отслеживать включение рабочего профиля + Отключать VPN при включении рабочего профиля -->
         <LinearLayout
+            android:id="@+id/monitor_profile_enable_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:orientation="vertical"
             android:background="@drawable/bg_card"
             android:padding="16dp"
-            android:layout_marginBottom="4dp">
+            android:layout_marginBottom="4dp"
+            android:visibility="gone">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/restore_state_container"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_restore_state"
-                    android:textSize="16sp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_restore_state"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/desc_restore_state"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_restore_state"
+                    android:maxLines="2"
+                    android:ellipsize="end"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/desc_restore_state"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switch_restore_state"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <!-- Отключать профиль при активном VPN -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_card"
-            android:padding="16dp"
-            android:layout_marginBottom="4dp">
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="12dp"
+                android:background="@color/divider" />
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_disable_on_profile_enable"
-                    android:textSize="16sp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-                <TextView
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_monitor_profile_enable"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/desc_monitor_profile_enable"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_monitor_profile_enable"
+                    android:maxLines="2"
+                    android:ellipsize="end"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/desc_disable_on_profile_enable"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_secondary" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/switch_disable_on_profile_enable"
-                android:maxLines="2"
-                android:ellipsize="end"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+            <!-- Отключать VPN при включении рабочего профиля -->
+            <LinearLayout
+                android:id="@+id/disable_on_profile_enable_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@color/divider" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_disable_vpn_on_profile_enable"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/desc_disable_vpn_on_profile_enable"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+                </LinearLayout>
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/switch_disable_on_profile_enable"
+                    android:maxLines="2"
+                    android:ellipsize="end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Режим мониторинга — Spinner -->

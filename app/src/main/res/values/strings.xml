@@ -20,8 +20,8 @@
     <string name="desc_restore_state">After VPN disconnects, restore the work profile to its previous state. If disabled — profile stays inactive</string>
 
     <!-- Reverse logic toggle -->
-    <string name="label_disable_on_profile_enable">Disable profile when VPN is active</string>
-    <string name="desc_disable_on_profile_enable">If the work profile is enabled manually while VPN is active — disable it again</string>
+    <string name="label_disable_vpn_on_profile_enable">Disable VPN on work profile activation</string>
+    <string name="desc_disable_vpn_on_profile_enable">If the work profile is enabled manually while a monitored VPN is active, the VPN will be disconnected. This uses a dummy VPN and requires granting VPN connection permission.</string>
 
     <!-- List mode -->
     <string name="label_list_mode">Monitoring mode</string>
@@ -47,6 +47,7 @@
     <string name="action_remove">Remove</string>
     <string name="action_stop">Stop</string>
     <string name="app_added">Application added</string>
+    <string name="stealth_vpn_permission_denied">VPN permission denied — the setting was not enabled</string>
 
     <!-- List mode -->
     <string name="list_mode_denylist">All VPN except exclusions</string>
@@ -94,6 +95,8 @@
     <string name="notification_channel_alert_name">VPN block alert</string>
     <string name="notification_blocked_title">Work profile blocked</string>
     <string name="notification_blocked_text">Disconnect active VPN to enable work profile</string>
+    <string name="notification_vpn_disabled_title">VPN disconnected</string>
+    <string name="notification_vpn_disabled_text">Active VPN was disconnected to keep the work profile enabled</string>
     <string name="notification_enable_failed_title">Could not enable work profile</string>
     <string name="notification_enable_failed_text">Unlock your screen to finish enabling it</string>
 
@@ -108,4 +111,6 @@
     <string name="about_label_license">License</string>
     <string name="about_github">GitHub Repository</string>
     <string name="about_donate">Support the Developer</string>
+    <string name="label_monitor_profile_enable">Monitor work profile activation</string>
+    <string name="desc_monitor_profile_enable">Monitor manual work profile activation. If a VPN is active, the profile will be disabled (or the VPN itself, depending on the \"Disable VPN on work profile activation\" setting).</string>
 </resources>
