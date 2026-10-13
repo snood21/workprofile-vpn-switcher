@@ -14,6 +14,7 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.media.RingtoneManager
 import io.github.snood21.workprofilevpnswitcher.util.AppSettings
+import io.github.snood21.workprofilevpnswitcher.util.LanguageUtils
 import io.github.snood21.workprofilevpnswitcher.util.VpnUtils
 import io.github.snood21.workprofilevpnswitcher.util.WorkProfileManager
 import io.github.snood21.workprofilevpnswitcher.R
@@ -34,6 +35,12 @@ import io.github.snood21.workprofilevpnswitcher.util.Logger
  * - выключена: отключить рабочий профиль обратно (старое поведение).
  *
  * Обе ветки активны только если AppSettings.monitorProfileEnable включена.
+ *
+ * Регистрация: динамическая, из VpnMonitorService.startMonitoring() (снимается в
+ * stopMonitoring()). В манифесте ресивер не объявлен: по документации Android
+ * ACTION_MANAGED_PROFILE_AVAILABLE/UNAVAILABLE отправляются только зарегистрированным
+ * через Context.registerReceiver() получателям, а не манифестным. Манифестное
+ * объявление срабатывало не на всех прошивках.
  */
 class WorkProfileReceiver : BroadcastReceiver() {
 
@@ -103,7 +110,7 @@ class WorkProfileReceiver : BroadcastReceiver() {
                                 R.string.notification_vpn_disabled_text
                             )
                         } else {
-                            Logger.w(TAG) {"Stealth VPN failed — falling back to disabling work profile"}
+                            Logger.w(TAG) {"Stealth VPN failed - falling back to disabling work profile"}
                             disableWorkProfileAndNotify(context)
                         }
                     }
@@ -115,12 +122,22 @@ class WorkProfileReceiver : BroadcastReceiver() {
             // pendingResult.finish() не вызвался бы вовсе.
             handler.postDelayed({
                 finishOnce {
-                    Logger.w(TAG) {"Stealth VPN result timed out — falling back to disabling work profile"}
+                    Logger.w(TAG) {"Stealth VPN result timed out - falling back to disabling work profile"}
                     disableWorkProfileAndNotify(context)
                 }
             }, STEALTH_VPN_RESULT_TIMEOUT_MS)
 
-            context.startService(StealthVpnService.intent(context, resultReceiver))
+            // startService может бросить исключение (например, запрет фонового
+            // запуска сервиса). Без перехвата ресивер упал бы, не выполнив откат.
+            try {
+                context.startService(StealthVpnService.intent(context, resultReceiver))
+            } catch (e: Exception) {
+                Logger.w(TAG) {"Failed to start StealthVpnService: ${e.message}"}
+                finishOnce {
+                    Logger.w(TAG) {"Falling back to disabling work profile"}
+                    disableWorkProfileAndNotify(context)
+                }
+            }
             return
         }
 
@@ -167,11 +184,13 @@ class WorkProfileReceiver : BroadcastReceiver() {
 
     private fun showNotification(context: Context, titleRes: Int, textRes: Int) {
         val notificationManager = context.getSystemService(NotificationManager::class.java)
+        // Строки — на языке приложения (в ресивере контекст использует системную локаль)
+        val localized = LanguageUtils.localizedContext(context)
 
         // Создать канал с фиксированным ID
         val channel = NotificationChannel(
             CHANNEL_ID_ALERT,
-            context.getString(R.string.notification_channel_alert_name),
+            localized.getString(R.string.notification_channel_alert_name),
             // IMPORTANCE_HIGH запрашивается, но на HyperOS FocusPlugin может понизить до SILENT
             // Мгновенная обратная связь обеспечивается вибрацией и звуком выше
             NotificationManager.IMPORTANCE_HIGH
@@ -183,8 +202,8 @@ class WorkProfileReceiver : BroadcastReceiver() {
         notificationManager.createNotificationChannel(channel)
 
         val notification = Notification.Builder(context, CHANNEL_ID_ALERT)
-            .setContentTitle(context.getString(titleRes))
-            .setContentText(context.getString(textRes))
+            .setContentTitle(localized.getString(titleRes))
+            .setContentText(localized.getString(textRes))
             .setSmallIcon(R.drawable.ic_notification)
             .setAutoCancel(true)
             .setTimeoutAfter(5000)

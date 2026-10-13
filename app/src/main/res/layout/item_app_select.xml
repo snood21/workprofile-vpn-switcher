@@ -4,8 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="?attr/selectableItemBackground"
-    android:fitsSystemWindows="true">
+    android:background="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/tv_app_name"

@@ -95,7 +95,9 @@ class SelectAppActivity : AppCompatActivity() {
             }
 
             allApps = apps
-            adapter.submitList(apps)
+            // Учитываем уже введённый текст поиска (в том числе восстановленный после
+            // пересоздания Activity), а не показываем полный список
+            filterApps(etSearch.text.toString())
         }
     }
 
@@ -121,10 +123,9 @@ class AppListAdapter(
         override fun areContentsTheSame(old: AppListItem, new: AppListItem) = old == new
     }
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvAppName: TextView = view.findViewById(R.id.tv_app_name)
         val tvPackageName: TextView = view.findViewById(R.id.tv_package_name)
-        init { view.setOnClickListener { onClick(getItem(bindingAdapterPosition)) } }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
@@ -135,5 +136,8 @@ class AppListAdapter(
         val item = getItem(position)
         holder.tvAppName.text = item.appName
         holder.tvPackageName.text = item.packageName
+        // Слушатель замыкается на item (как в VpnAppsAdapter), позиция не используется:
+        // нажатие по исчезающей строке не приводит к getItem(NO_POSITION)
+        holder.itemView.setOnClickListener { onClick(item) }
     }
 }

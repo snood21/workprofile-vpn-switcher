@@ -36,6 +36,8 @@ class AppSettings(context: Context) {
         const val THEME_MODE_DARK = "dark"
 
         const val DEFAULT_LOG_MAX_SIZE_KB = 512
+        const val MIN_LOG_MAX_SIZE_KB = 128
+        const val MAX_LOG_MAX_SIZE_KB = 1024
     }
 
     // --- VPN-пакеты ---
@@ -141,7 +143,9 @@ class AppSettings(context: Context) {
         get() = prefs.getBoolean(KEY_LOGGING_ENABLED, false)
         set(value) = prefs.edit { putBoolean(KEY_LOGGING_ENABLED, value) }
 
+    // Ранее допускалось до 8192 КБ: ранее сохранённое значение приводится к текущему диапазону
     var logMaxSizeKb: Int
         get() = prefs.getInt(KEY_LOG_MAX_SIZE_KB, DEFAULT_LOG_MAX_SIZE_KB)
+            .coerceIn(MIN_LOG_MAX_SIZE_KB, MAX_LOG_MAX_SIZE_KB)
         set(value) = prefs.edit { putInt(KEY_LOG_MAX_SIZE_KB, value) }
 }

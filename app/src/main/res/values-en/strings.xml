@@ -78,7 +78,7 @@
     <string name="label_logging_enabled">Enable logging</string>
     <string name="desc_logging_enabled">Write log entries to a file inside the app\'s private storage, viewable in this screen</string>
     <string name="label_log_max_size">Max log file size (KB)</string>
-    <string name="error_log_max_size_range">Acceptable range: 128–8192 KB</string>
+    <string name="error_log_max_size_range">Acceptable range: 128–1024 KB</string>
     <string name="action_show_log">Show log</string>
     <string name="action_clear_log">Clear log</string>
     <string name="log_empty">Log is empty</string>
@@ -99,6 +99,7 @@
     <string name="notification_vpn_disabled_text">Active VPN was disconnected to keep the work profile enabled</string>
     <string name="notification_enable_failed_title">Could not enable work profile</string>
     <string name="notification_enable_failed_text">Unlock your screen to finish enabling it</string>
+    <string name="notification_enable_exhausted_text">Automatic retries are exhausted. Enable the work profile manually</string>
 
     <!-- About -->
     <string name="about_boosty">Boosty</string>

@@ -77,7 +77,7 @@ class LoggingSettingsActivity : AppCompatActivity() {
             null -> {
                 etLogMaxSize.error = getString(R.string.error_invalid_number)
             }
-            !in 128..8192 -> {
+            !in AppSettings.MIN_LOG_MAX_SIZE_KB..AppSettings.MAX_LOG_MAX_SIZE_KB -> {
                 etLogMaxSize.setText(settings.logMaxSizeKb.toString())
                 etLogMaxSize.error = getString(R.string.error_log_max_size_range)
             }

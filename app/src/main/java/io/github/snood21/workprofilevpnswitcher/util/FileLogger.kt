@@ -13,25 +13,20 @@ import java.util.Locale
  * Не требует дополнительных разрешений — каталог приватный для приложения.
  * Один файл, перезаписывается с усечением по размеру (см. trimFile).
  *
- * Writer держится открытым между вызовами write() (буферизация) — это важно
- * при активном polling-мониторинге, где запись может происходить каждые
- * несколько секунд на протяжении долгого времени, пока активен VPN.
- * Явный flush() вызывается:
- *  - всегда сразу для уровня "E" (ошибки — потеря недопустима);
- *  - не чаще раза в FLUSH_INTERVAL_MS для остальных уровней.
- * Это ограничивает риск потери данных при аварийном завершении процесса
- * несколькими последними отладочными строками, сохраняя основной выигрыш
- * от буферизации по сравнению с открытием файла на каждую запись.
+ * Writer держится открытым между вызовами write(), чтобы не открывать файл
+ * на каждую строку. Буфер сбрасывается (flush) после каждой записи: строки
+ * пишутся редко (в основном при смене состояния VPN/профиля), а последние
+ * строки перед внезапной остановкой процесса — самые ценные для диагностики.
+ * Без немедленного flush они оставались бы в буфере и терялись при
+ * аварийном завершении процесса.
  */
 object FileLogger {
     private const val FILE_NAME = "app.log"
-    private const val FLUSH_INTERVAL_MS = 10_000L
     private val lock = Any()
     private val timestampFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
     private const val NEWLINE_BYTE: Byte = '\n'.code.toByte()
 
     private var writer: BufferedWriter? = null
-    private var lastFlushTime = 0L
 
     fun write(context: Context, tag: String, level: String, message: String) {
         val settings = AppSettings(context)
@@ -45,12 +40,7 @@ object FileLogger {
             val timestamp = timestampFormat.format(Date())
             val activeWriter = getOrOpenWriter(file)
             activeWriter.write("$timestamp $level/$tag: $message\n")
-
-            val now = System.currentTimeMillis()
-            if (level == "E" || now - lastFlushTime >= FLUSH_INTERVAL_MS) {
-                activeWriter.flush()
-                lastFlushTime = now
-            }
+            activeWriter.flush()
         }
     }
 

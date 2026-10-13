@@ -78,7 +78,7 @@
     <string name="label_logging_enabled">Включить логирование</string>
     <string name="desc_logging_enabled">Записывать события в файл внутри приватного каталога приложения, доступный для просмотра на этом экране</string>
     <string name="label_log_max_size">Макс. размер файла лога (КБ)</string>
-    <string name="error_log_max_size_range">Допустимый диапазон: 128–8192 КБ</string>
+    <string name="error_log_max_size_range">Допустимый диапазон: 128–1024 КБ</string>
     <string name="action_show_log">Показать лог</string>
     <string name="action_clear_log">Очистить лог</string>
     <string name="log_empty">Лог пуст</string>
@@ -99,6 +99,7 @@
     <string name="notification_vpn_disabled_text">Активный VPN отключён, чтобы рабочий профиль остался включённым</string>
     <string name="notification_enable_failed_title">Не удалось включить рабочий профиль</string>
     <string name="notification_enable_failed_text">Разблокируйте экран, чтобы завершить включение</string>
+    <string name="notification_enable_exhausted_text">Автоматические попытки исчерпаны. Включите рабочий профиль вручную</string>
 
     <!-- О программе -->
     <string name="about_boosty">Boosty</string>

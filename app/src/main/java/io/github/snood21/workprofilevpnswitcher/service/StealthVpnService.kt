@@ -90,10 +90,10 @@ class StealthVpnService : VpnService() {
         } catch (e: SecurityException) {
             // Пользователь не давал согласие VpnService.prepare(), либо оно
             // было отозвано — заглушка не может быть установлена.
-            Logger.e(TAG, "establish() failed — VPN permission not granted", e)
+            Logger.e(TAG, "establish() failed - VPN permission not granted", e)
             null
         } catch (e: IllegalStateException) {
-            Logger.e(TAG, "establish() failed — VPN already prepared by another app in this process", e)
+            Logger.e(TAG, "establish() failed - VPN already prepared by another app in this process", e)
             null
         }
 

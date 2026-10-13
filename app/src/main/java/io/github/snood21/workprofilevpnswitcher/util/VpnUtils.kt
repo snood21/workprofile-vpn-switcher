@@ -22,6 +22,13 @@ import android.os.Process
  */
 object VpnUtils {
     private const val TAG = "VpnUtils"
+
+    // log=false подавляет только записи в лог: решение (результат) вычисляется как обычно.
+    // Нужно, чтобы при опросе одна и та же неотслеживаемая сеть не писалась в лог каждый тик.
+    private fun logD(enabled: Boolean, msg: () -> String) {
+        if (enabled) Logger.d(TAG, msg)
+    }
+
     fun isMonitoredVpnActive(context: Context, settings: AppSettings): Boolean {
         val connectivityManager = context.getSystemService(ConnectivityManager::class.java)
         @Suppress("DEPRECATION")
@@ -38,14 +45,15 @@ object VpnUtils {
         caps: NetworkCapabilities,
         connectivityManager: ConnectivityManager,
         context: Context,
-        settings: AppSettings
+        settings: AppSettings,
+        log: Boolean = true
     ): String? {
         val ownerUid = caps.ownerUid
         if (ownerUid >= 0 && ownerUid == Process.myUid()) {
             // Собственный VPN (StealthVpnService) — не считается сторонним VPN
             // ни в каком режиме списка, иначе его же мгновенное появление/
             // исчезновение будет ошибочно воспринято как VPN-событие.
-            Logger.d(TAG) {"VPN owned by this app (StealthVpnService) — ignoring"}
+            logD(log) {"VPN owned by this app (StealthVpnService) - ignoring"}
             return null
         }
         if (ownerUid >= 0) {
@@ -56,40 +64,40 @@ object VpnUtils {
             val candidate = packagesForUid?.firstOrNull { settings.isVpnPackageMonitored(it) }
                 ?: packagesForUid?.firstOrNull()
             return if (candidate != null && settings.isVpnPackageMonitored(candidate)) {
-                Logger.d(TAG) {"VPN identified by ownerUid: $candidate"}
+                logD(log) {"VPN identified by ownerUid: $candidate"}
                 candidate
             } else {
-                Logger.d(TAG) {"VPN owner $candidate not monitored"}
+                logD(log) {"VPN owner $candidate not monitored"}
                 null
             }
         }
-        val packageFromExtra = resolveVpnPackageFromExtraInfo(connectivityManager, network)
+        val packageFromExtra = resolveVpnPackageFromExtraInfo(connectivityManager, network, log)
         if (packageFromExtra != null) {
             return if (settings.isVpnPackageMonitored(packageFromExtra)) {
-                Logger.d(TAG) {"VPN identified by extraInfo: $packageFromExtra"}
+                logD(log) {"VPN identified by extraInfo: $packageFromExtra"}
                 packageFromExtra
             } else {
-                Logger.d(TAG) {"VPN $packageFromExtra not monitored"}
+                logD(log) {"VPN $packageFromExtra not monitored"}
                 null
             }
         }
         return if (settings.shouldMonitorUnknownVpn()) {
-            Logger.d(TAG) {"ownerUid and extraInfo unavailable, monitoring unknown VPN"}
+            logD(log) {"ownerUid and extraInfo unavailable, monitoring unknown VPN"}
             "unknown"
         } else {
-            Logger.d(TAG) {"ownerUid and extraInfo unavailable, not monitoring (allowlist mode)"}
+            logD(log) {"ownerUid and extraInfo unavailable, not monitoring (allowlist mode)"}
             null
         }
     }
 
-    fun resolveVpnPackageFromExtraInfo(connectivityManager: ConnectivityManager, network: Network): String? {
+    fun resolveVpnPackageFromExtraInfo(connectivityManager: ConnectivityManager, network: Network, log: Boolean = true): String? {
         @Suppress("DEPRECATION")
         val extraInfo = connectivityManager.getNetworkInfo(network)?.extraInfo
         val packageFromExtra = extraInfo
             ?.takeIf { it.startsWith("VPN:") }
             ?.removePrefix("VPN:")
             ?.takeIf { it.isNotEmpty() }
-        Logger.d(TAG) {"extraInfo=$extraInfo, packageFromExtra=$packageFromExtra"}
+        logD(log) {"extraInfo=$extraInfo, packageFromExtra=$packageFromExtra"}
         return packageFromExtra
     }
 }

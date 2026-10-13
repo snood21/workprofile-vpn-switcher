@@ -96,15 +96,6 @@
             </intent-filter>
         </receiver>
 
-        <receiver
-            android:name=".receiver.WorkProfileReceiver"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.MANAGED_PROFILE_AVAILABLE" />
-                <action android:name="android.intent.action.MANAGED_PROFILE_UNAVAILABLE" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>

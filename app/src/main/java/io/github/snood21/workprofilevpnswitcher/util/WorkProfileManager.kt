@@ -91,7 +91,7 @@ class WorkProfileManager(context: Context) {
             if (requestAccepted) {
                 Logger.d(TAG) {"Work profile enabled"}
             } else {
-                Logger.w(TAG) {"enableWorkProfile: system declined the request (requestQuietModeEnabled returned false) — may require user credential confirmation"}
+                Logger.w(TAG) {"enableWorkProfile: system declined the request (requestQuietModeEnabled returned false) - may require user credential confirmation"}
             }
             requestAccepted
         } catch (e: SecurityException) {

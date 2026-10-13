@@ -4,7 +4,19 @@
     <color name="warning_background">#3D3418</color>
     <color name="warning_text">#FFCCBC</color>
     <color name="warning_border">#FFB300</color>
-    <!-- #B0B0B0 на #1E1E1E (colorSurface тёмной темы) даёт контраст ~7.5:1 — проходит WCAG AA -->
+    <!-- #B0B0B0 на #1E1E1E (colorSurface тёмной темы) даёт контраст 7.69:1 — проходит WCAG AA -->
     <color name="text_secondary">#B0B0B0</color>
     <color name="divider">#3A3A3A</color>
+    <!--
+      Статус VPN и ссылки. Значения светлой темы (#2E7D32, #616161, #1976D2) на тёмном фоне
+      дают 3.0-3.7:1 (ниже WCAG AA 4.5:1). Контраст ниже посчитан для фона окна #121212
+      (стандартный для Theme. MaterialComponents тёмной темы; в themes.xml явно не задан)
+      и для карточек #1E1E1E (colorSurface).
+    -->
+    <!-- #66BB6A: 7.92:1 на #121212, 7.05:1 на #1E1E1E -->
+    <color name="status_active">#66BB6A</color>
+    <!-- #B0B0B0: 8.64:1 на #121212, 7.69:1 на #1E1E1E -->
+    <color name="status_inactive">#B0B0B0</color>
+    <!-- #64B5F6: 8.46:1 на #121212, 7.53:1 на #1E1E1E -->
+    <color name="link_color">#64B5F6</color>
 </resources>

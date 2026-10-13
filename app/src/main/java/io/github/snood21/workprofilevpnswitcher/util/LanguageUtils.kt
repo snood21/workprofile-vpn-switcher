@@ -18,10 +18,23 @@ object LanguageUtils {
         val lang = settings.appLanguage
         if (lang.isEmpty()) return base
 
-        val locale = Locale.forLanguageTag(lang)
-        Locale.setDefault(locale)
+        Locale.setDefault(Locale.forLanguageTag(lang))
+        return localizedContext(base)
+    }
+
+    /**
+     * Контекст с сохранённым языком приложения — только для получения строк
+     * (getString) вне Activity: в сервисах и ресиверах (тексты уведомлений).
+     * Не меняет Locale.setDefault. Язык читается из настроек при каждом вызове,
+     * поэтому результат не нужно кэшировать в долгоживущих компонентах.
+     * Если язык приложения «системный», возвращается исходный контекст.
+     */
+    fun localizedContext(base: Context): Context {
+        val lang = AppSettings(base).appLanguage
+        if (lang.isEmpty()) return base
+
         val config = Configuration(base.resources.configuration)
-        config.setLocale(locale)
+        config.setLocale(Locale.forLanguageTag(lang))
         return base.createConfigurationContext(config)
     }
 

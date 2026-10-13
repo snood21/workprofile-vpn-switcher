@@ -1,0 +1,7 @@
+* Reworked detection of manual work profile enabling for better device compatibility
+* Notifications now follow the app language
+* Fixed notification status: "VPN active" is shown even if the work profile is already off
+* Message when automatic attempts to enable the work profile are exhausted
+* Fixed a possible crash in the VPN app picker
+* Log is saved immediately, max size limited to 1024 KB
+* Better readability of VPN status in the dark theme

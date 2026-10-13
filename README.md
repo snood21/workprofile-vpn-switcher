@@ -4,6 +4,7 @@
 [![Platform](https://img.shields.io/badge/platform-Android-green)](https://android.com)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/snood21/workprofile-vpn-switcher?cacheSeconds=60)
 [![Min SDK](https://img.shields.io/badge/minSdk-30%20(Android%2011)-blue)](https://developer.android.com/about/versions/11)
+[![F-Droid](https://img.shields.io/f-droid/v/io.github.snood21.workprofilevpnswitcher)](https://f-droid.org/packages/io.github.snood21.workprofilevpnswitcher/)
 
 Приложение для автоматического управления рабочим профилем Android при подключении VPN.
 
@@ -50,15 +51,16 @@
 
 ### Установка
 
-1. Скачать APK из [Releases](https://github.com/snood21/workprofile-vpn-switcher/releases)
-2. Установить на устройство
-3. Выдать разрешение через ADB:
+1. Установить приложение из [F-Droid](https://f-droid.org/packages/io.github.snood21.workprofilevpnswitcher/) или скачать APK из [Releases](https://github.com/snood21/workprofile-vpn-switcher/releases) и установить его на устройство
+2. Выдать разрешение через ADB:
 
 ```bash
 adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.MODIFY_QUIET_MODE
 ```
 
 > **Примечание:** разрешение нужно выдавать заново после переустановки приложения. При обычном обновлении сохраняется.
+>
+> Сборки из F-Droid и из GitHub Releases могут быть подписаны разными ключами, поэтому при смене источника установки приложение нужно сначала удалить (после этого разрешение придётся выдать заново).
 
 ### Настройка
 
@@ -79,14 +81,14 @@ adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.M
 
 ### Разрешения
 
-| Разрешение               | Для чего                                         |
-|--------------------------|--------------------------------------------------|
-| `ACCESS_NETWORK_STATE`   | Отслеживание VPN-подключений                     |
-| `FOREGROUND_SERVICE`     | Фоновый мониторинг                               |
-| `RECEIVE_BOOT_COMPLETED` | Автозапуск после перезагрузки                    |
-| `POST_NOTIFICATIONS`     | Уведомления о блокировке профиля                 |
-| `VIBRATE`                | Тактильная обратная связь                        |
-| `MODIFY_QUIET_MODE`      | Управление рабочим профилем (выдаётся через ADB) |
+| Разрешение                               | Для чего                                                                                                   |
+|------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `ACCESS_NETWORK_STATE`                   | Отслеживание VPN-подключений                                                                               |
+| `FOREGROUND_SERVICE`                     | Фоновый мониторинг                                                                                         |
+| `RECEIVE_BOOT_COMPLETED`                 | Автозапуск после перезагрузки                                                                              |
+| `POST_NOTIFICATIONS`                     | Уведомления о блокировке профиля                                                                           |
+| `VIBRATE`                                | Тактильная обратная связь                                                                                  |
+| `MODIFY_QUIET_MODE`                      | Управление рабочим профилем (выдаётся через ADB)                                                           |
 | VPN-подключение (`VpnService.prepare()`) | Заглушка VPN — согласие запрашивается системным диалогом при включении соответствующей опции, не через ADB |
 
 ### Известные ограничения
@@ -162,15 +164,16 @@ An Android application that automatically manages the work profile when a VPN co
 
 ### Installation
 
-1. Download the APK from [Releases](https://github.com/snood21/workprofile-vpn-switcher/releases)
-2. Install on device
-3. Grant the required permission via ADB:
+1. Install the app from [F-Droid](https://f-droid.org/packages/io.github.snood21.workprofilevpnswitcher/) or download the APK from [Releases](https://github.com/snood21/workprofile-vpn-switcher/releases) and install it on your device
+2. Grant the required permission via ADB:
 
 ```bash
 adb shell pm grant io.github.snood21.workprofilevpnswitcher android.permission.MODIFY_QUIET_MODE
 ```
 
 > **Note:** the permission must be re-granted after a clean reinstall. It persists through regular updates.
+>
+> Builds from F-Droid and from GitHub Releases may be signed with different keys, so when switching the installation source, uninstall the app first (you will need to grant the permission again afterwards).
 
 ### Setup
 
@@ -191,14 +194,14 @@ You may also need to:
 
 ### Permissions
 
-| Permission               | Purpose                               |
-|--------------------------|---------------------------------------|
-| `ACCESS_NETWORK_STATE`   | Monitor VPN connections               |
-| `FOREGROUND_SERVICE`     | Background monitoring                 |
-| `RECEIVE_BOOT_COMPLETED` | Autostart after reboot                |
-| `POST_NOTIFICATIONS`     | Profile block notifications           |
-| `VIBRATE`                | Haptic feedback                       |
-| `MODIFY_QUIET_MODE`      | Manage work profile (granted via ADB) |
+| Permission                              | Purpose                                                                                               |
+|-----------------------------------------|-------------------------------------------------------------------------------------------------------|
+| `ACCESS_NETWORK_STATE`                  | Monitor VPN connections                                                                               |
+| `FOREGROUND_SERVICE`                    | Background monitoring                                                                                 |
+| `RECEIVE_BOOT_COMPLETED`                | Autostart after reboot                                                                                |
+| `POST_NOTIFICATIONS`                    | Profile block notifications                                                                           |
+| `VIBRATE`                               | Haptic feedback                                                                                       |
+| `MODIFY_QUIET_MODE`                     | Manage work profile (granted via ADB)                                                                 |
 | VPN connection (`VpnService.prepare()`) | Dummy VPN — consent requested via a system dialog when enabling the corresponding option, not via ADB |
 
 ### Known limitations

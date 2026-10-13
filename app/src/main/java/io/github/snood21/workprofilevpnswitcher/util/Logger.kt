@@ -4,8 +4,9 @@ import android.content.Context
 import android.util.Log
 
 /**
- * Логирование в logcat (только debug-сборки) и опционально в файл
- * (если включено в настройках, независимо от типа сборки).
+ * Логирование d/w — в logcat и в файл, только если логирование включено
+ * в настройках (AppSettings.loggingEnabled), независимо от типа сборки.
+ * Ошибки (e) всегда пишутся в logcat, а в файл — если логирование включено.
  * Требует Logger.init(context) при старте процесса — см. Application.onCreate().
  */
 object Logger {

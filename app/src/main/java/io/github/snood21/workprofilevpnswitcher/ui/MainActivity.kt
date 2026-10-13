@@ -70,9 +70,26 @@ class MainActivity : AppCompatActivity() {
         getSystemService(ConnectivityManager::class.java)
     }
 
+    // Текущая VPN-сеть (в Android одновременно существует только одна). Нужна, чтобы запоздавший
+    // onLost прежней сети (при смене VPN-приложения) не сбросил статус новой сети.
+    // Читается и меняется только в UI-потоке.
+    private var currentVpn: Network? = null
+
     private val vpnNetworkCallback = object : ConnectivityManager.NetworkCallback() {
-        override fun onAvailable(network: Network) { runOnUiThread { updateVpnStatus(true) } }
-        override fun onLost(network: Network) { runOnUiThread { updateVpnStatus(false) } }
+        override fun onAvailable(network: Network) {
+            runOnUiThread {
+                currentVpn = network
+                updateVpnStatus(true)
+            }
+        }
+        override fun onLost(network: Network) {
+            runOnUiThread {
+                if (network == currentVpn) {
+                    currentVpn = null
+                    updateVpnStatus(false)
+                }
+            }
+        }
     }
 
     // Данные для Spinner режима списка
@@ -104,16 +121,19 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         checkWarnings()
+        // Пока Activity была на паузе, колбэк не работал — состояние определяется заново
+        currentVpn = null
         registerVpnCallback()
         // Принудительная проверка текущего состояния VPN,
         // на случай если NetworkCallback не сработает
         //Альтернативы для получения всех текущих сетей без callback нет в публичном API
         @Suppress("DEPRECATION")
-        val hasVpn = connectivityManager.allNetworks.any { network ->
+        val vpnNetwork = connectivityManager.allNetworks.firstOrNull { network ->
             connectivityManager.getNetworkCapabilities(network)
                 ?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
         }
-        updateVpnStatus(hasVpn)
+        currentVpn = vpnNetwork
+        updateVpnStatus(vpnNetwork != null)
     }
 
     override fun onPause() {
@@ -301,15 +321,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun registerVpnCallback() {
+        // Как и в VpnMonitorService: у сетей с TRANSPORT_VPN нет NOT_VPN, поэтому
+        // это требование (если оно включено в запрос по умолчанию) нужно снять.
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
+            .removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
             .build()
         try {
             connectivityManager.registerNetworkCallback(request, vpnNetworkCallback)
-            val hasVpn = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-                ?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true
-            updateVpnStatus(hasVpn)
-        } catch (e: Exception) { }
+        } catch (e: RuntimeException) {
+            // SecurityException, IllegalArgumentException (колбэк уже зарегистрирован),
+            // превышение лимита запросов сети — статус при этом остаётся по запасной проверке
+            Logger.w(TAG) { "Failed to register VPN network callback: ${e.message}" }
+        }
     }
 
     private fun updateVpnStatus(active: Boolean) {
@@ -317,11 +341,16 @@ class MainActivity : AppCompatActivity() {
         tvVpnStatus.setTextColor(getColor(if (active) R.color.status_active else R.color.status_inactive))
     }
 
+    // Результат не используется: без разрешения служба работает, просто уведомление не видно
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         ) {
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1002)
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
     }
 
